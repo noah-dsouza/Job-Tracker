@@ -2,17 +2,13 @@
 
 import Image from "next/image";
 
-interface LogoProps {
-  className?: string;
-}
-
-export default function Logo({ className }: LogoProps) {
+export default function Logo({ className }: { className?: string }) {
   return (
     <Image
       src="/greenlit.png"
+      width={100}
+      height={100}
       alt="Greenlit Logo"
-      width={48}
-      height={48}
       className={className}
     />
   );
