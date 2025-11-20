@@ -1,17 +1,21 @@
-import express from "express";
-import { getJobs, addJob, updateJob } from "./jobsController";
-import { autoFill, resumeScore, followup } from "./aiController";
+import { Router } from "express";
+import { getMatchScore } from "./aiController";
+import {
+  getJobs,
+  createJob,
+  getJobById,
+  updateJob,
+  deleteJob,
+} from "./jobsController";
 
-const router = express.Router();
+const router = Router();
 
-// Job routes
 router.get("/jobs", getJobs);
-router.post("/jobs", addJob);
+router.post("/jobs", createJob);
+router.get("/jobs/:id", getJobById);
 router.patch("/jobs/:id", updateJob);
+router.delete("/jobs/:id", deleteJob);
+router.post("/ai/match", getMatchScore);
 
-// AI routes
-router.post("/ai/autofill", autoFill);
-router.post("/ai/score", resumeScore);
-router.post("/ai/followup", followup);
 
 export default router;

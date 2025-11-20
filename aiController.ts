@@ -1,71 +1,71 @@
-import { Request, Response } from "express";
-import Groq from "groq-sdk";
 import dotenv from "dotenv";
-
 dotenv.config();
 
-const groq = new Groq({ apiKey: process.env.GROQ_API_KEY });
+import Groq from "groq-sdk";
 
-// Autofill job fields from description
-export async function autoFill(req: Request, res: Response) {
-  const { jobDescription } = req.body;
+const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
+
+export const getMatchScore = async (req, res) => {
+  const { company, role, description } = req.body;
 
   try {
-    const response = await groq.chat.completions.create({
-      model: "mixtral-8x7b-32768",
+    const response = await client.chat.completions.create({
+      model: "llama-3.1-8b-instant",
       messages: [
         {
           role: "user",
-          content: `Extract structured job info from this job description:\n\n${jobDescription}`
-        }
-      ]
+          content: `
+Score this job for how good of a match it is for a young software engineer.
+Return ONLY a JSON object with "score" (1-100) and "reason".
+Do NOT add extra explanation or comments outside the JSON.
+
+Company: ${company}
+Role: ${role}
+Description: ${description}
+          `,
+        },
+      ],
+      temperature: 0.2,
     });
 
-    res.json({ result: response.choices[0].message.content });
+    let text = response.choices[0].message.content?.trim();
+
+    text = text.replace(/```json/gi, "")
+               .replace(/```/g, "")
+               .trim();
+
+    // Extract ONLY the JSON block between the first { and last }
+    const firstBrace = text.indexOf("{");
+    const lastBrace = text.lastIndexOf("}");
+
+    if (firstBrace === -1 || lastBrace === -1) {
+      return res.status(500).json({
+        error: "No JSON object found in AI response",
+        raw: text
+      });
+    }
+
+    const jsonString = text.slice(firstBrace, lastBrace + 1);
+
+    let aiData;
+    try {
+      aiData = JSON.parse(jsonString);
+    } catch (err) {
+      return res.status(500).json({
+        error: "AI JSON failed to parse",
+        raw: text,
+        extracted: jsonString,
+        parseError: String(err)
+      });
+    }
+
+    return res.json(aiData);
+
   } catch (error) {
-    res.status(500).json({ error: "AI autofill failed" });
-  }
-}
-
-// Resume match score
-export async function resumeScore(req: Request, res: Response) {
-  const { resume, jobDescription } = req.body;
-
-  try {
-    const response = await groq.chat.completions.create({
-      model: "mixtral-8x7b-32768",
-      messages: [
-        {
-          role: "user",
-          content: `Compare the resume and job description.
-          Return a match score (0-100), missing skills, and strengths.\n\nResume:\n${resume}\n\nJob:\n${jobDescription}`
-        }
-      ]
+    console.log(error);
+    res.status(500).json({
+      error: "AI failed to score job",
+      details: error,
     });
-
-    res.json({ result: response.choices[0].message.content });
-  } catch (error) {
-    res.status(500).json({ error: "AI scoring failed" });
   }
-}
-
-// Follow up email generator
-export async function followup(req: Request, res: Response) {
-  const { company, role } = req.body;
-
-  try {
-    const response = await groq.chat.completions.create({
-      model: "mixtral-8x7b-32768",
-      messages: [
-        {
-          role: "user",
-          content: `Write a short professional follow-up email for a ${role} role at ${company}. Keep it concise.`
-        }
-      ]
-    });
-
-    res.json({ result: response.choices[0].message.content });
-  } catch (error) {
-    res.status(500).json({ error: "AI follow-up failed" });
-  }
-}
+};

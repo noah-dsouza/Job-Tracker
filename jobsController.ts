@@ -1,49 +1,76 @@
-import fs from "fs";
-import { Request, Response } from "express";
+import { PrismaClient } from "@prisma/client";
 
-const DB_PATH = "./db.json";
+const prisma = new PrismaClient();
 
-// Read databse
-function readDB() {
-  return JSON.parse(fs.readFileSync(DB_PATH, "utf8"));
-}
+/* GET /api/jobs, Returns all jobs in the database */
+export const getJobs = async (req, res) => {
+  try {
+    const jobs = await prisma.job.findMany();
+    res.json(jobs);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch jobs" });
+  }
+};
 
-// Write into database
-function writeDB(data: any) {
-  fs.writeFileSync(DB_PATH, JSON.stringify(data, null, 2));
-}
+/* POST /api/jobs, Creates a new job */
+export const createJob = async (req, res) => {
+  try {
+    const { company, role, status } = req.body;
 
-// Get all jobs
-export function getJobs(req: Request, res: Response) {
-  const db = readDB();
-  res.json(db.jobs);
-}
+    const job = await prisma.job.create({
+      data: { company, role, status },
+    });
 
-// Add new job
-export function addJob(req: Request, res: Response) {
-  const db = readDB();
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to create job" });
+  }
+};
 
-  const newJob = {
-    id: Date.now(),
-    ...req.body
-  };
+/* GET /api/jobs/:id, Return job by ID */
+export const getJobById = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-  db.jobs.push(newJob);
-  writeDB(db);
+    const job = await prisma.job.findUnique({
+      where: { id: Number(id) },
+    });
 
-  res.json(newJob);
-}
+    if (!job) return res.status(404).json({ error: "Job not found" });
 
-// Update job status
-export function updateJob(req: Request, res: Response) {
-  const { id } = req.params;
-  const db = readDB();
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to fetch job" });
+  }
+};
 
-  const job = db.jobs.find((j: any) => j.id == Number(id));
-  if (!job) return res.status(404).json({ error: "Job not found" });
+/*PATCH /api/jobs/:id, Updates a job */
+export const updateJob = async (req, res) => {
+  try {
+    const { id } = req.params;
 
-  Object.assign(job, req.body);
+    const job = await prisma.job.update({
+      where: { id: Number(id) },
+      data: req.body,
+    });
 
-  writeDB(db);
-  res.json(job);
-}
+    res.json(job);
+  } catch (error) {
+    res.status(500).json({ error: "Failed to update job" });
+  }
+};
+
+/*DELETE /api/jobs/:id, Deletes a job */
+export const deleteJob = async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    await prisma.job.delete({
+      where: { id: Number(id) },
+    });
+
+    res.json({ success: true });
+  } catch (error) {
+    res.status(500).json({ error: "Failed to delete job" });
+  }
+};
