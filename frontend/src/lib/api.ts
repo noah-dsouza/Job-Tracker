@@ -1,58 +1,43 @@
-const API_URL = "http://localhost:3000/api";
+const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:4000";
 
-export async function signup(email: string, password: string) {
-  const res = await fetch(`${API_URL}/auth/signup`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
+// Helpers
+async function request(path: string, method: string, token?: string, body?: any) {
+  const res = await fetch(`${API_URL}${path}`, {
+    method,
+    headers: {
+      "Content-Type": "application/json",
+      ...(token ? { Authorization: `Bearer ${token}` } : {})
+    },
+    body: body ? JSON.stringify(body) : undefined,
   });
+
   return res.json();
 }
+
+// AUTH 
 
 export async function login(email: string, password: string) {
-  const res = await fetch(`${API_URL}/auth/login`, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ email, password }),
-  });
-  return res.json();
+  return request("/auth/login", "POST", undefined, { email, password });
 }
 
+export async function signup(email: string, password: string) {
+  return request("/auth/signup", "POST", undefined, { email, password });
+}
+
+// JOBS 
+
 export async function getJobs(token: string) {
-  const res = await fetch(`${API_URL}/jobs`, {
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
+  return request("/jobs", "GET", token);
 }
 
 export async function createJob(token: string, job: any) {
-  const res = await fetch(`${API_URL}/jobs`, {
-    method: "POST",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(job),
-  });
-  return res.json();
+  return request("/jobs", "POST", token, job);
 }
 
 export async function updateJob(token: string, id: string, job: any) {
-  const res = await fetch(`${API_URL}/jobs/${id}`, {
-    method: "PUT",
-    headers: {
-      Authorization: `Bearer ${token}`,
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify(job),
-  });
-  return res.json();
+  return request(`/jobs/${id}`, "PUT", token, job);
 }
 
 export async function deleteJob(token: string, id: string) {
-  const res = await fetch(`${API_URL}/jobs/${id}`, {
-    method: "DELETE",
-    headers: { Authorization: `Bearer ${token}` },
-  });
-  return res.json();
+  return request(`/jobs/${id}`, "DELETE", token);
 }
