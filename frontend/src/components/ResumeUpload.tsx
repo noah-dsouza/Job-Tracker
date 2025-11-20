@@ -229,3 +229,4 @@ University of Technology (2016-2020)`;
     </div>
   );
 }
+export default ResumeUpload;

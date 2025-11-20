@@ -84,3 +84,4 @@ export function Login({ onLogin }: LoginProps) {
     </div>
   );
 }
+export default Login;

@@ -187,3 +187,4 @@ export function AddJobModal({ job, onClose, onSave }: AddJobModalProps) {
     </div>
   );
 }
+export default AddJobModal;

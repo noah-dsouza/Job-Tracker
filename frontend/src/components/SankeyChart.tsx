@@ -215,3 +215,4 @@ export function SankeyChart({ stats }: SankeyChartProps) {
     </div>
   );
 }
+export default SankeyChart;

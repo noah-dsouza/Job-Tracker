@@ -203,3 +203,4 @@ function getMatchReason(score: number): string {
   if (score >= 60) return 'Decent match with some gaps';
   return 'Consider skill development for better fit';
 }
+export default AIMatchScore;
