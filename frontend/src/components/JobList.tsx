@@ -1,6 +1,6 @@
 import { useState } from 'react';
 import { Trash2, Edit, Search } from 'lucide-react';
-import { Job } from '../App';
+import { Job } from "@/app/page";
 
 interface JobListProps {
   jobs: Job[];

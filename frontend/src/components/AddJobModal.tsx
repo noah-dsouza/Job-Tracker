@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { X } from 'lucide-react';
-import { Job } from '../App';
+import { Job } from "@/app/page";
+
 
 interface AddJobModalProps {
   job?: Job | null;

@@ -1,9 +1,20 @@
-export function Logo({ className = "w-8 h-8" }: { className?: string }) {
+"use client";
+
+import Image from "next/image";
+
+interface LogoProps {
+  className?: string;
+}
+
+export default function Logo({ className }: LogoProps) {
   return (
-    <img 
-      src="figma:asset/bb05904020ab3c1deedcc003030103b88f03d8fa.png"
-      alt="Greenlit"
+    <Image
+      src="/greenlit.png"
+      alt="Greenlit logo"
+      width={64}
+      height={64}
       className={className}
+      priority
     />
   );
 }

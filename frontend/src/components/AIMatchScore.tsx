@@ -1,4 +1,4 @@
-import { Job } from '../App';
+import { Job } from "@/app/page";
 import { Sparkles, TrendingUp, Target } from 'lucide-react';
 
 interface AIMatchScoreProps {
