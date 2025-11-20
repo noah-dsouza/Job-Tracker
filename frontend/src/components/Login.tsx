@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { Logo } from './Logo';
+import Logo from "@/components/Logo";
+
 
 interface LoginProps {
   onLogin: () => void;
