@@ -6,5 +6,5 @@ interface LogoProps {
   className?: string;
 }
 
-export default Logo;
+export default greenlit.png;
 

@@ -147,7 +147,8 @@ export default function App() {
             setIsModalOpen(false);
             setEditingJob(null);
           }}
-          onSave={editingJob ? handleEditJob : handleAddJob}
+          onSave: (job: Job) => void;
+
         />
       )}
     </div>
