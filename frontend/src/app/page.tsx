@@ -1,65 +1,155 @@
-import Image from "next/image";
+"use client";
 
-export default function Home() {
+import { useState } from "react";
+
+import Login from "@/components/Login";
+import Dashboard from "@/components/Dashboard";
+import JobList from "@/components/JobList";
+import AddJobModal from "@/components/AddJobModal";
+import AIMatchScore from "@/components/AIMatchScore";
+import ResumeUpload from "@/components/ResumeUpload";
+import Logo from "@/components/Logo";
+
+export interface Job {
+  id: string;
+  company: string;
+  position: string;
+  status:
+    | "applied"
+    | "reply"
+    | "initial-interview"
+    | "OA"
+    | "final-interview"
+    | "offer"
+    | "accepted"
+    | "rejected"
+    | "no-reply";
+  dateApplied: string;
+  notes?: string;
+  matchScore?: number;
+}
+
+export default function Page() {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [currentView, setCurrentView] = useState<
+    "dashboard" | "jobs" | "ai-match" | "resume"
+  >("dashboard");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [resumeText, setResumeText] = useState("");
+
+  const [jobs, setJobs] = useState<Job[]>([
+    { id: "1", company: "TechCorp", position: "Frontend Developer", status: "initial-interview", dateApplied: "2025-11-01", matchScore: 87 },
+    { id: "2", company: "StartupXYZ", position: "Full Stack Engineer", status: "OA", dateApplied: "2025-11-05", matchScore: 92 },
+    { id: "3", company: "BigTech Inc", position: "Software Engineer", status: "reply", dateApplied: "2025-11-10", matchScore: 78 },
+    { id: "4", company: "DesignCo", position: "UI Developer", status: "applied", dateApplied: "2025-11-12", matchScore: 85 },
+    { id: "5", company: "DataCorp", position: "Frontend Engineer", status: "no-reply", dateApplied: "2025-10-15", matchScore: 65 },
+    { id: "6", company: "CloudSystems", position: "React Developer", status: "rejected", dateApplied: "2025-10-20", matchScore: 70 },
+    { id: "7", company: "AI Startup", position: "JavaScript Developer", status: "final-interview", dateApplied: "2025-11-08", matchScore: 94 },
+    { id: "8", company: "FinTech Solutions", position: "Senior Developer", status: "offer", dateApplied: "2025-11-03", matchScore: 96 },
+  ]);
+
+  const handleAddJob = (job: Omit<Job, "id">) => {
+    const newJob = { ...job, id: Date.now().toString() };
+    setJobs([...jobs, newJob]);
+    setIsModalOpen(false);
+  };
+
+  const handleEditJob = (job: Job) => {
+    setJobs(jobs.map((j) => (j.id === job.id ? job : j)));
+    setIsModalOpen(false);
+    setEditingJob(null);
+  };
+
+  const handleDeleteJob = (id: string) => {
+    setJobs(jobs.filter((j) => j.id !== id));
+  };
+
+  const openEditModal = (job: Job) => {
+    setEditingJob(job);
+    setIsModalOpen(true);
+  };
+
+  if (!isAuthenticated) {
+    return <Login onLogin={() => setIsAuthenticated(true)} />;
+  }
+
   return (
-    <div className="flex min-h-screen items-center justify-center bg-zinc-50 font-sans dark:bg-black">
-      <main className="flex min-h-screen w-full max-w-3xl flex-col items-center justify-between py-32 px-16 bg-white dark:bg-black sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={100}
-          height={20}
-          priority
-        />
-        <div className="flex flex-col items-center gap-6 text-center sm:items-start sm:text-left">
-          <h1 className="max-w-xs text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            To get started, edit the page.tsx file.
-          </h1>
-          <p className="max-w-md text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            Looking for a starting point or more instructions? Head over to{" "}
-            <a
-              href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Templates
-            </a>{" "}
-            or the{" "}
-            <a
-              href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-              className="font-medium text-zinc-950 dark:text-zinc-50"
-            >
-              Learning
-            </a>{" "}
-            center.
-          </p>
+    <div className="min-h-screen bg-[#f8f6f3]">
+      {/* Navigation */}
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-[#d4d1c8] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-4">
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Logo className="w-8 h-8" />
+              <h1 className="text-[#3d5a4f] tracking-tight">Greenlit</h1>
+            </div>
+
+            <div className="flex gap-2">
+              {["dashboard", "jobs", "ai-match", "resume"].map((view) => (
+                <button
+                  key={view}
+                  onClick={() => setCurrentView(view as any)}
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    currentView === view
+                      ? "bg-[#8a9a8f] text-white shadow-md"
+                      : "text-[#5a6d5e] hover:bg-[#e8e6df]"
+                  }`}
+                >
+                  {view === "ai-match"
+                    ? "AI Match"
+                    : view.charAt(0).toUpperCase() + view.slice(1)}
+                </button>
+              ))}
+
+              <button
+                onClick={() => {
+                  setEditingJob(null);
+                  setIsModalOpen(true);
+                }}
+                className="px-4 py-2 rounded-lg bg-[#6b8273] text-white hover:bg-[#5a6d5e] transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+              >
+                + Add Job
+              </button>
+            </div>
+          </div>
         </div>
-        <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">
-          <a
-            className="flex h-12 w-full items-center justify-center gap-2 rounded-full bg-foreground px-5 text-background transition-colors hover:bg-[#383838] dark:hover:bg-[#ccc] md:w-[158px]"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={16}
-              height={16}
-            />
-            Deploy Now
-          </a>
-          <a
-            className="flex h-12 w-full items-center justify-center rounded-full border border-solid border-black/[.08] px-5 transition-colors hover:border-transparent hover:bg-black/[.04] dark:border-white/[.145] dark:hover:bg-[#1a1a1a] md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Documentation
-          </a>
-        </div>
+      </nav>
+
+      {/* Main content */}
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {currentView === "dashboard" && <Dashboard jobs={jobs} />}
+
+        {currentView === "jobs" && (
+          <JobList
+            jobs={jobs}
+            onEdit={openEditModal}
+            onDelete={handleDeleteJob}
+          />
+        )}
+
+        {currentView === "ai-match" && <AIMatchScore jobs={jobs} />}
+
+        {currentView === "resume" && (
+          <ResumeUpload
+            resumeText={resumeText}
+            onResumeChange={setResumeText}
+          />
+        )}
       </main>
+
+      {/* Add/Edit Modal */}
+      {isModalOpen && (
+        <AddJobModal
+          job={editingJob}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingJob(null);
+          }}
+          onSave={editingJob ? handleEditJob : handleAddJob}
+        />
+      )}
     </div>
   );
 }
