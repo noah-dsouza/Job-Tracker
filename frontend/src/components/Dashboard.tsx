@@ -1,4 +1,4 @@
-import { Job } from "@/app/page";
+import type { Job } from "@/components/App";
 import { SankeyChart } from './SankeyChart';
 
 interface DashboardProps {
