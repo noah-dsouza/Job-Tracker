@@ -2,7 +2,6 @@
 
 import { useState } from "react";
 import Logo from "@/components/Logo";
-import { login, signup } from "@/lib/api";
 
 interface LoginProps {
   onLogin: () => void;
@@ -12,19 +11,41 @@ export default function Login({ onLogin }: LoginProps) {
   const [isSignup, setIsSignup] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [loading, setLoading] = useState(false);
+  const [errorMsg, setErrorMsg] = useState("");
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    setErrorMsg("");
+    setLoading(true);
 
-    const fn = isSignup ? signup : login;
-    const res = await fn(email, password);
+    try {
+      const endpoint = isSignup
+        ? "http://localhost:2000/auth/signup"
+        : "http://localhost:2000/auth/login";
 
-    if (res.token) {
-      localStorage.setItem("token", res.token);
+      const res = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, password }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        setErrorMsg(data.message || "Something went wrong");
+        setLoading(false);
+        return;
+      }
+
+      // Logged in successfully
       onLogin();
-    } else {
-      alert(res.error || "Authentication failed");
+    } catch (err) {
+      console.error(err);
+      setErrorMsg("Server unreachable. Is the backend running?");
     }
+
+    setLoading(false);
   };
 
   return (
@@ -42,6 +63,12 @@ export default function Login({ onLogin }: LoginProps) {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
+            {errorMsg && (
+              <div className="text-red-600 text-center font-medium">
+                {errorMsg}
+              </div>
+            )}
+
             <div className="space-y-2">
               <label htmlFor="email" className="text-[#5a6d5e] block">
                 Email
@@ -51,7 +78,7 @@ export default function Login({ onLogin }: LoginProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300"
+                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300 focus:shadow-lg"
                 placeholder="you@example.com"
                 required
               />
@@ -66,7 +93,7 @@ export default function Login({ onLogin }: LoginProps) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300"
+                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300 focus:shadow-lg"
                 placeholder="••••••••"
                 required
               />
@@ -74,15 +101,25 @@ export default function Login({ onLogin }: LoginProps) {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-[#6b8273] text-white transition-all duration-300 hover:bg-[#5a6d5e] hover:shadow-xl hover:-translate-y-1"
+              disabled={loading}
+              className={`w-full py-3 rounded-xl bg-[#6b8273] text-white transition-all duration-300 hover:bg-[#5a6d5e] hover:shadow-xl hover:-translate-y-1 active:translate-y-0 ${
+                loading ? "opacity-60 cursor-not-allowed" : ""
+              }`}
             >
-              {isSignup ? "Sign Up" : "Sign In"}
+              {loading
+                ? "Loading..."
+                : isSignup
+                ? "Sign Up"
+                : "Sign In"}
             </button>
           </form>
 
           <div className="mt-6 text-center">
             <button
-              onClick={() => setIsSignup(!isSignup)}
+              onClick={() => {
+                setErrorMsg("");
+                setIsSignup(!isSignup);
+              }}
               className="text-[#6b8273] hover:text-[#5a6d5e] transition-colors duration-300"
             >
               {isSignup
