@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Login from "@/components/Login";
 import Dashboard from "@/components/Dashboard";
@@ -9,6 +9,8 @@ import AddJobModal from "@/components/AddJobModal";
 import AIMatchScore from "@/components/AIMatchScore";
 import ResumeUpload from "@/components/ResumeUpload";
 import Logo from "@/components/Logo";
+
+import { getJobs, createJob, updateJob, deleteJob } from "@/lib/api";
 
 export interface Job {
   id: string;
@@ -39,30 +41,48 @@ export default function App() {
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [resumeText, setResumeText] = useState("");
 
-  const [jobs, setJobs] = useState<Job[]>([
-    { id: "1", company: "TechCorp", position: "Frontend Developer", status: "initial-interview", dateApplied: "2025-11-01", matchScore: 87 },
-    { id: "2", company: "StartupXYZ", position: "Full Stack Engineer", status: "OA", dateApplied: "2025-11-05", matchScore: 92 },
-    { id: "3", company: "BigTech Inc", position: "Software Engineer", status: "reply", dateApplied: "2025-11-10", matchScore: 78 },
-    { id: "4", company: "DesignCo", position: "UI Developer", status: "applied", dateApplied: "2025-11-12", matchScore: 85 },
-    { id: "5", company: "DataCorp", position: "Frontend Engineer", status: "no-reply", dateApplied: "2025-10-15", matchScore: 65 },
-    { id: "6", company: "CloudSystems", position: "React Developer", status: "rejected", dateApplied: "2025-10-20", matchScore: 70 },
-    { id: "7", company: "AI Startup", position: "JavaScript Developer", status: "final-interview", dateApplied: "2025-11-08", matchScore: 94 },
-    { id: "8", company: "FinTech Solutions", position: "Senior Developer", status: "offer", dateApplied: "2025-11-03", matchScore: 96 },
-  ]);
+  const [jobs, setJobs] = useState<Job[]>([]);
 
-  const handleAddJob = (job: Omit<Job, "id">) => {
-    const newJob = { ...job, id: Date.now().toString() };
-    setJobs([...jobs, newJob]);
-    setIsModalOpen(false);
+  // Load jobs after login
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    setIsAuthenticated(true);
+
+    getJobs(token).then((data) => {
+      if (!data.error) setJobs(data);
+    });
+  }, []);
+
+  const handleAddJob = async (job: Omit<Job, "id">) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const result = await createJob(token, job);
+    if (!result.error) {
+      setJobs([...jobs, result]);
+      setIsModalOpen(false);
+    }
   };
 
-  const handleEditJob = (job: Job) => {
-    setJobs(jobs.map((j) => (j.id === job.id ? job : j)));
-    setIsModalOpen(false);
-    setEditingJob(null);
+  const handleEditJob = async (job: Job) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    const result = await updateJob(token, job.id, job);
+    if (!result.error) {
+      setJobs(jobs.map((j) => (j.id === job.id ? result : j)));
+      setIsModalOpen(false);
+      setEditingJob(null);
+    }
   };
 
-  const handleDeleteJob = (id: string) => {
+  const handleDeleteJob = async (id: string) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    await deleteJob(token, id);
     setJobs(jobs.filter((j) => j.id !== id));
   };
 
@@ -77,7 +97,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8f6f3]">
-      {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-sm border-b border-[#d4d1c8] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -117,7 +136,6 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Main content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         {currentView === "dashboard" && <Dashboard jobs={jobs} />}
         {currentView === "jobs" && (
@@ -129,7 +147,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Add/Edit Modal */}
       {isModalOpen && (
         <AddJobModal
           job={editingJob}

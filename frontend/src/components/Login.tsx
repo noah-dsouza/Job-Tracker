@@ -1,19 +1,30 @@
-import { useState } from 'react';
-import Logo from "@/components/Logo";
+"use client";
 
+import { useState } from "react";
+import Logo from "@/components/Logo";
+import { login, signup } from "@/lib/api";
 
 interface LoginProps {
   onLogin: () => void;
 }
 
-export function Login({ onLogin }: LoginProps) {
+export default function Login({ onLogin }: LoginProps) {
   const [isSignup, setIsSignup] = useState(false);
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    onLogin();
+
+    const fn = isSignup ? signup : login;
+    const res = await fn(email, password);
+
+    if (res.token) {
+      localStorage.setItem("token", res.token);
+      onLogin();
+    } else {
+      alert(res.error || "Authentication failed");
+    }
   };
 
   return (
@@ -26,7 +37,7 @@ export function Login({ onLogin }: LoginProps) {
             </div>
             <h2 className="text-[#3d5a4f] mb-2">Greenlit</h2>
             <p className="text-[#7a8a7e]">
-              {isSignup ? 'Create your account' : 'Welcome back'}
+              {isSignup ? "Create your account" : "Welcome back"}
             </p>
           </div>
 
@@ -40,7 +51,7 @@ export function Login({ onLogin }: LoginProps) {
                 type="email"
                 value={email}
                 onChange={(e) => setEmail(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300 focus:shadow-lg focus:shadow-[#8a9a8f]/20"
+                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300"
                 placeholder="you@example.com"
                 required
               />
@@ -55,7 +66,7 @@ export function Login({ onLogin }: LoginProps) {
                 type="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300 focus:shadow-lg focus:shadow-[#8a9a8f]/20"
+                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300"
                 placeholder="••••••••"
                 required
               />
@@ -63,9 +74,9 @@ export function Login({ onLogin }: LoginProps) {
 
             <button
               type="submit"
-              className="w-full py-3 rounded-xl bg-[#6b8273] text-white transition-all duration-300 hover:bg-[#5a6d5e] hover:shadow-xl hover:-translate-y-1 active:translate-y-0"
+              className="w-full py-3 rounded-xl bg-[#6b8273] text-white transition-all duration-300 hover:bg-[#5a6d5e] hover:shadow-xl hover:-translate-y-1"
             >
-              {isSignup ? 'Sign Up' : 'Sign In'}
+              {isSignup ? "Sign Up" : "Sign In"}
             </button>
           </form>
 
@@ -75,7 +86,7 @@ export function Login({ onLogin }: LoginProps) {
               className="text-[#6b8273] hover:text-[#5a6d5e] transition-colors duration-300"
             >
               {isSignup
-                ? 'Already have an account? Sign in'
+                ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
             </button>
           </div>
@@ -84,4 +95,3 @@ export function Login({ onLogin }: LoginProps) {
     </div>
   );
 }
-export default Login;
