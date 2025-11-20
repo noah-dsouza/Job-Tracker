@@ -77,7 +77,6 @@ export default function App() {
 
   return (
     <div className="min-h-screen bg-[#f8f6f3]">
-      {/* Navigation */}
       <nav className="bg-white/80 backdrop-blur-sm border-b border-[#d4d1c8] sticky top-0 z-40">
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
@@ -117,29 +116,20 @@ export default function App() {
         </div>
       </nav>
 
-      {/* Main content */}
       <main className="max-w-7xl mx-auto px-6 py-8">
         {currentView === "dashboard" && <Dashboard jobs={jobs} />}
 
         {currentView === "jobs" && (
-          <JobList
-            jobs={jobs}
-            onEdit={openEditModal}
-            onDelete={handleDeleteJob}
-          />
+          <JobList jobs={jobs} onEdit={openEditModal} onDelete={handleDeleteJob} />
         )}
 
         {currentView === "ai-match" && <AIMatchScore jobs={jobs} />}
 
         {currentView === "resume" && (
-          <ResumeUpload
-            resumeText={resumeText}
-            onResumeChange={setResumeText}
-          />
+          <ResumeUpload resumeText={resumeText} onResumeChange={setResumeText} />
         )}
       </main>
 
-      {/* Add/Edit Modal */}
       {isModalOpen && (
         <AddJobModal
           job={editingJob}
@@ -147,8 +137,9 @@ export default function App() {
             setIsModalOpen(false);
             setEditingJob(null);
           }}
-          onSave: (job: Job) => void;
-
+          onSave={(job: Job) =>
+            editingJob ? handleEditJob(job) : handleAddJob(job)
+          }
         />
       )}
     </div>
