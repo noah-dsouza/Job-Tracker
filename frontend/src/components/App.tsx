@@ -99,6 +99,13 @@ export default function App() {
     setIsModalOpen(true);
   };
 
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setIsAuthenticated(false);
+    setJobs([]);
+    setCurrentView("dashboard");
+  };
+
   if (!isAuthenticated) {
     return (
       <Login
@@ -116,7 +123,10 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
 
+<<<<<<< HEAD
       
+=======
+>>>>>>> 76fcc03 (	modified:   db.json)
             <div className="flex items-center">
               <Logo className="w-14 h-14" />
             </div>
@@ -138,15 +148,23 @@ export default function App() {
                 </button>
               ))}
 
-              <button
-                onClick={() => {
-                  setEditingJob(null);
-                  setIsModalOpen(true);
-                }}
-                className="px-4 py-2 rounded-lg bg-[#6b8273] text-white hover:bg-[#5a6d5e] transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
-              >
-                + Add Job
-              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingJob(null);
+                    setIsModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-[#6b8273] text-white hover:bg-[#5a6d5e] transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  + Add Job
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-lg border border-[#d4d1c8] text-[#5a6d5e] hover:bg-[#e8e6df] transition-all duration-300"
+                >
+                  Logout
+                </button>
+              </div>
             </div>
           </div>
         </div>

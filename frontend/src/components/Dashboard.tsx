@@ -6,7 +6,7 @@ interface DashboardProps {
 }
 
 export function Dashboard({ jobs }: DashboardProps) {
-  // Calculate statistics
+  // Calculate stats
   const stats = {
     applied: jobs.filter(j => j.status === 'applied').length,
     noReply: jobs.filter(j => j.status === 'no-reply').length,
