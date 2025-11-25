@@ -1,12 +1,17 @@
 const API_URL = process.env.NEXT_PUBLIC_API_URL || "http://localhost:2000";
 
-// Helpers
-async function request(path: string, method: string, token?: string, body?: any) {
+// request helper
+async function request(
+  path: string,
+  method: string,
+  token?: string,        
+  body?: any
+) {
   const res = await fetch(`${API_URL}${path}`, {
     method,
     headers: {
       "Content-Type": "application/json",
-      ...(token ? { Authorization: `Bearer ${token}` } : {})
+      ...(token ? { userId: token } : {}), 
     },
     body: body ? JSON.stringify(body) : undefined,
   });
@@ -14,7 +19,7 @@ async function request(path: string, method: string, token?: string, body?: any)
   return res.json();
 }
 
-// AUTH 
+// Auth Endpoints
 
 export async function login(email: string, password: string) {
   return request("/auth/login", "POST", undefined, { email, password });
@@ -24,7 +29,7 @@ export async function signup(email: string, password: string) {
   return request("/auth/signup", "POST", undefined, { email, password });
 }
 
-// JOBS 
+// j*b endpoints
 
 export async function getJobs(token: string) {
   return request("/jobs", "GET", token);
