@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 
 import Login from "@/components/Login";
 import Dashboard from "@/components/Dashboard";
@@ -43,17 +43,25 @@ export default function App() {
 
   const [jobs, setJobs] = useState<Job[]>([]);
 
+  const loadJobs = useCallback(async (token: string) => {
+    try {
+      const data = await getJobs(token);
+      if (!data.error) {
+        setJobs(data);
+      }
+    } catch (err) {
+      console.error("Failed to load jobs", err);
+    }
+  }, []);
+
   // Load jobs after login
   useEffect(() => {
     const token = localStorage.getItem("token");
     if (!token) return;
 
     setIsAuthenticated(true);
-
-    getJobs(token).then((data) => {
-      if (!data.error) setJobs(data);
-    });
-  }, []);
+    loadJobs(token);
+  }, [loadJobs]);
 
   const handleAddJob = async (job: Omit<Job, "id">) => {
     const token = localStorage.getItem("token");
@@ -61,7 +69,7 @@ export default function App() {
 
     const result = await createJob(token, job);
     if (!result.error) {
-      setJobs([...jobs, result]);
+      setJobs((prev) => [...prev, result]);
       setIsModalOpen(false);
     }
   };
@@ -72,7 +80,7 @@ export default function App() {
 
     const result = await updateJob(token, job.id, job);
     if (!result.error) {
-      setJobs(jobs.map((j) => (j.id === job.id ? result : j)));
+      setJobs((prev) => prev.map((j) => (j.id === job.id ? result : j)));
       setIsModalOpen(false);
       setEditingJob(null);
     }
@@ -83,7 +91,7 @@ export default function App() {
     if (!token) return;
 
     await deleteJob(token, id);
-    setJobs(jobs.filter((j) => j.id !== id));
+    setJobs((prev) => prev.filter((j) => j.id !== id));
   };
 
   const openEditModal = (job: Job) => {
@@ -92,7 +100,14 @@ export default function App() {
   };
 
   if (!isAuthenticated) {
-    return <Login onLogin={() => setIsAuthenticated(true)} />;
+    return (
+      <Login
+        onLogin={(token) => {
+          setIsAuthenticated(true);
+          loadJobs(token);
+        }}
+      />
+    );
   }
 
   return (

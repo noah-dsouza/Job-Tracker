@@ -4,7 +4,7 @@ import { useState } from "react";
 import Logo from "@/components/Logo";
 
 interface LoginProps {
-  onLogin: () => void;
+  onLogin: (token: string) => void;
 }
 
 export default function Login({ onLogin }: LoginProps) {
@@ -38,8 +38,16 @@ export default function Login({ onLogin }: LoginProps) {
         return;
       }
 
+      if (!data?.id) {
+        setErrorMsg("Unexpected response from server");
+        setLoading(false);
+        return;
+      }
+
+      localStorage.setItem("token", data.id);
+
       // Logged in successfully
-      onLogin();
+      onLogin(data.id);
     } catch (err) {
       console.error(err);
       setErrorMsg("Server unreachable. Is the backend running?");
