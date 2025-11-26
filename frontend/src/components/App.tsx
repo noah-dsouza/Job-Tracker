@@ -116,7 +116,7 @@ export default function App() {
         <div className="max-w-7xl mx-auto px-6 py-4">
           <div className="flex items-center justify-between">
 
-            {/* 🔥 Updated logo block — removed text & made logo larger */}
+      
             <div className="flex items-center">
               <Logo className="w-14 h-14" />
             </div>
