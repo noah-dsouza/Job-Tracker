@@ -52,15 +52,37 @@
       "userId": "1763660678613",
       "company": "monkey",
       "position": "monkey",
-      "status": "OA",
+      "status": "rejected",
       "dateApplied": "2025-11-27",
       "notes": "",
       "createdAt": "2025-11-27T05:02:46.728Z",
-      "updatedAt": "2025-11-27T05:02:46.728Z",
+      "updatedAt": "2025-11-27T05:19:47.513Z",
       "stageHistory": [
         "applied",
         "reply",
-        "OA"
+        "OA",
+        "initial-interview",
+        "final-interview",
+        "rejected"
+      ]
+    },
+    {
+      "id": "1764220711349",
+      "userId": "1763660678613",
+      "company": "halal",
+      "position": "dev",
+      "status": "accepted",
+      "dateApplied": "2025-11-27",
+      "notes": "",
+      "createdAt": "2025-11-27T05:18:31.349Z",
+      "updatedAt": "2025-11-27T05:18:31.349Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "initial-interview",
+        "final-interview",
+        "offer",
+        "accepted"
       ]
     }
   ]
