@@ -22,6 +22,28 @@
       "notes": "",
       "createdAt": "2025-11-25T04:40:32.359Z",
       "updatedAt": "2025-11-25T04:51:18.388Z"
+    },
+    {
+      "id": "1764219753681",
+      "userId": "1763660678613",
+      "company": "TechCorp",
+      "position": "monkey",
+      "status": "applied",
+      "dateApplied": "2025-11-27",
+      "notes": "s",
+      "createdAt": "2025-11-27T05:02:33.681Z",
+      "updatedAt": "2025-11-27T05:02:33.681Z"
+    },
+    {
+      "id": "1764219766729",
+      "userId": "1763660678613",
+      "company": "monkey",
+      "position": "monkey",
+      "status": "OA",
+      "dateApplied": "2025-11-27",
+      "notes": "",
+      "createdAt": "2025-11-27T05:02:46.728Z",
+      "updatedAt": "2025-11-27T05:02:46.728Z"
     }
   ]
 }

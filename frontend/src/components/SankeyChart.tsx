@@ -18,8 +18,8 @@ export function SankeyChart({ stats }: SankeyChartProps) {
   const svgRef = useRef<SVGSVGElement>(null);
   const [hoveredNode, setHoveredNode] = useState<string | null>(null);
   
-  // Calculate totals for flows
-  const totalApplied = stats.applied + stats.noReply + stats.rejected + stats.reply;
+  // Track how many jobs are currently sitting in the applied stage
+  const appliedCount = stats.applied;
 
   useEffect(() => {
     if (!svgRef.current) return;
@@ -45,7 +45,7 @@ export function SankeyChart({ stats }: SankeyChartProps) {
 
   // Define node positions and data
   const nodes = [
-    { id: 'applied', x: 50, y: 220, label: 'Jobs Applied', count: totalApplied, color: '#8a9a8f' },
+    { id: 'applied', x: 50, y: 220, label: 'Jobs Applied', count: appliedCount, color: '#8a9a8f' },
     { id: 'reply', x: 250, y: 100, label: 'Replies', count: stats.reply, color: '#9ca592' },
     { id: 'no-reply', x: 250, y: 320, label: 'No Reply', count: stats.noReply, color: '#b5aea5' },
     { id: 'initial-interview', x: 450, y: 60, label: 'Initial Interview', count: stats.initialInterview, color: '#7a8d7f' },
