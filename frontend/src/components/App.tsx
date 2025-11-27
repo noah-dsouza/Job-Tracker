@@ -12,23 +12,27 @@ import Logo from "@/components/Logo";
 
 import { getJobs, createJob, updateJob, deleteJob } from "@/lib/api";
 
+export type JobStatus =
+  | "applied"
+  | "reply"
+  | "initial-interview"
+  | "OA"
+  | "final-interview"
+  | "offer"
+  | "accepted"
+  | "offer-rejected"
+  | "rejected"
+  | "no-reply";
+
 export interface Job {
   id: string;
   company: string;
   position: string;
-  status:
-    | "applied"
-    | "reply"
-    | "initial-interview"
-    | "OA"
-    | "final-interview"
-    | "offer"
-    | "accepted"
-    | "rejected"
-    | "no-reply";
+  status: JobStatus;
   dateApplied: string;
   notes?: string;
   matchScore?: number;
+  stageHistory?: JobStatus[];
 }
 
 export default function App() {

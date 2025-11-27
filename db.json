@@ -10,7 +10,10 @@
       "notes": "Initial application submitted",
       "matchScore": 72,
       "createdAt": "2024-01-01T00:00:00.000Z",
-      "updatedAt": "2024-01-01T00:00:00.000Z"
+      "updatedAt": "2024-01-01T00:00:00.000Z",
+      "stageHistory": [
+        "applied"
+      ]
     },
     {
       "id": "1764045632359",
@@ -21,7 +24,14 @@
       "dateApplied": "2025-11-25",
       "notes": "",
       "createdAt": "2025-11-25T04:40:32.359Z",
-      "updatedAt": "2025-11-25T04:51:18.388Z"
+      "updatedAt": "2025-11-25T04:51:18.388Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "initial-interview",
+        "final-interview",
+        "offer"
+      ]
     },
     {
       "id": "1764219753681",
@@ -32,7 +42,10 @@
       "dateApplied": "2025-11-27",
       "notes": "s",
       "createdAt": "2025-11-27T05:02:33.681Z",
-      "updatedAt": "2025-11-27T05:02:33.681Z"
+      "updatedAt": "2025-11-27T05:02:33.681Z",
+      "stageHistory": [
+        "applied"
+      ]
     },
     {
       "id": "1764219766729",
@@ -43,7 +56,12 @@
       "dateApplied": "2025-11-27",
       "notes": "",
       "createdAt": "2025-11-27T05:02:46.728Z",
-      "updatedAt": "2025-11-27T05:02:46.728Z"
+      "updatedAt": "2025-11-27T05:02:46.728Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "OA"
+      ]
     }
   ]
 }

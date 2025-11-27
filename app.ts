@@ -29,18 +29,94 @@ const JOBS_FILE = path.join(__dirname, "db.json");
 let users: User[] = [];
 let jobs: JobRecord[] = [];
 
+type JobStatus =
+  | "applied"
+  | "reply"
+  | "no-reply"
+  | "initial-interview"
+  | "OA"
+  | "final-interview"
+  | "offer"
+  | "accepted"
+  | "offer-rejected"
+  | "rejected";
+
 type JobRecord = {
   id: string;
   userId: string;
   company: string;
   position: string;
-  status: string;
+  status: JobStatus;
   dateApplied: string;
   notes?: string;
   matchScore?: number;
   createdAt: string;
   updatedAt: string;
+  stageHistory: JobStatus[];
 };
+
+const JOB_STATUSES: readonly JobStatus[] = [
+  "applied",
+  "reply",
+  "no-reply",
+  "initial-interview",
+  "OA",
+  "final-interview",
+  "offer",
+  "accepted",
+  "offer-rejected",
+  "rejected",
+];
+
+const STAGE_PRESETS: Record<JobStatus, JobStatus[]> = {
+  "applied": ["applied"],
+  "reply": ["applied", "reply"],
+  "no-reply": ["applied", "no-reply"],
+  "initial-interview": ["applied", "reply", "initial-interview"],
+  "OA": ["applied", "reply", "OA"],
+  "final-interview": [
+    "applied",
+    "reply",
+    "initial-interview",
+    "final-interview",
+  ],
+  "offer": [
+    "applied",
+    "reply",
+    "initial-interview",
+    "final-interview",
+    "offer",
+  ],
+  "accepted": [
+    "applied",
+    "reply",
+    "initial-interview",
+    "final-interview",
+    "offer",
+    "accepted",
+  ],
+  "offer-rejected": [
+    "applied",
+    "reply",
+    "initial-interview",
+    "final-interview",
+    "offer",
+    "offer-rejected",
+  ],
+  "rejected": ["applied", "reply", "rejected"],
+};
+
+function isJobStatus(value: unknown): value is JobStatus {
+  return typeof value === "string" && JOB_STATUSES.includes(value as JobStatus);
+}
+
+function buildStageHistory(status: JobStatus, existing?: JobStatus[]): JobStatus[] {
+  const baseStages = STAGE_PRESETS[status] ?? (["applied", status] as JobStatus[]);
+  const set = new Set<JobStatus>(existing ?? []);
+  baseStages.forEach((stage) => set.add(stage));
+  set.add("applied");
+  return Array.from(set);
+}
 
 function loadUsers() {
   try {
@@ -73,7 +149,15 @@ function loadJobs() {
 
     const raw = fs.readFileSync(JOBS_FILE, "utf8");
     const parsed = JSON.parse(raw);
-    jobs = Array.isArray(parsed.jobs) ? parsed.jobs : [];
+    const parsedJobs = Array.isArray(parsed.jobs) ? parsed.jobs : [];
+    jobs = parsedJobs.map((job: JobRecord) => {
+      const safeStatus = isJobStatus(job.status) ? job.status : "applied";
+      return {
+        ...job,
+        status: safeStatus,
+        stageHistory: buildStageHistory(safeStatus, job.stageHistory),
+      };
+    });
   } catch (err) {
     console.error("Failed to load db.json:", err);
     jobs = [];
@@ -216,17 +300,19 @@ app.post("/jobs", requireUser, (req, res) => {
   }
 
   const now = new Date().toISOString();
+  const normalizedStatus = isJobStatus(status) ? status : "applied";
   const job: JobRecord = {
     id: Date.now().toString(),
     userId,
     company,
     position,
-    status,
+    status: normalizedStatus,
     dateApplied: dateApplied || now.split("T")[0],
     notes,
     matchScore,
     createdAt: now,
     updatedAt: now,
+    stageHistory: buildStageHistory(normalizedStatus),
   };
 
   jobs.push(job);
@@ -245,9 +331,21 @@ app.put("/jobs/:id", requireUser, (req, res) => {
   }
 
   const existingJob = jobs[jobIndex];
+  const updates = { ...(req.body || {}) };
+  delete updates.stageHistory;
+
+  let nextStatus = existingJob.status;
+  if (typeof updates.status === "string" && isJobStatus(updates.status)) {
+    nextStatus = updates.status;
+  }
+  delete updates.status;
+
+  const nextStageHistory = buildStageHistory(nextStatus, existingJob.stageHistory);
   const updatedJob: JobRecord = {
     ...existingJob,
-    ...req.body,
+    ...updates,
+    status: nextStatus,
+    stageHistory: nextStageHistory,
     id: existingJob.id,
     userId: existingJob.userId,
     createdAt: existingJob.createdAt,

@@ -51,6 +51,7 @@ export function JobList({ jobs, onEdit, onDelete }: JobListProps) {
           <option value="final-interview">Final Interview</option>
           <option value="offer">Offer</option>
           <option value="accepted">Accepted</option>
+          <option value="offer-rejected">Offer Rejected</option>
           <option value="rejected">Rejected</option>
           <option value="no-reply">No Reply</option>
         </select>
@@ -129,6 +130,7 @@ function getStatusColor(status: string): string {
     'final-interview': 'bg-[#5a6d5e]',
     'offer': 'bg-[#c5a987]',
     'accepted': 'bg-[#6b8273]',
+    'offer-rejected': 'bg-[#d97b66]',
   };
   return colors[status] || 'bg-[#9ca8a0]';
 }
@@ -144,6 +146,7 @@ function getStatusLabel(status: string): string {
     'final-interview': 'Final Interview',
     'offer': 'Offer',
     'accepted': 'Accepted',
+    'offer-rejected': 'Offer Rejected',
   };
   return labels[status] || status;
 }

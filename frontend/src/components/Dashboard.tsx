@@ -5,24 +5,63 @@ interface DashboardProps {
   jobs: Job[];
 }
 
+const stagePresets: Record<Job["status"], Job["status"][]> = {
+  'applied': ['applied'],
+  'reply': ['applied', 'reply'],
+  'no-reply': ['applied', 'no-reply'],
+  'initial-interview': ['applied', 'reply', 'initial-interview'],
+  'OA': ['applied', 'reply', 'OA'],
+  'final-interview': ['applied', 'reply', 'initial-interview', 'final-interview'],
+  'offer': ['applied', 'reply', 'initial-interview', 'final-interview', 'offer'],
+  'accepted': ['applied', 'reply', 'initial-interview', 'final-interview', 'offer', 'accepted'],
+  'offer-rejected': ['applied', 'reply', 'initial-interview', 'final-interview', 'offer', 'offer-rejected'],
+  'rejected': ['applied', 'reply', 'rejected'],
+};
+
+function getStageHistory(job: Job): Job["status"][] {
+  const existing = Array.isArray(job.stageHistory) ? job.stageHistory : [];
+  const defaults = stagePresets[job.status] ?? ['applied', job.status];
+  return Array.from(new Set<Job["status"]>([...existing, ...defaults, 'applied']));
+}
+
 export function Dashboard({ jobs }: DashboardProps) {
-  // Calculate stats
-  const stats = {
-    applied: jobs.filter(j => j.status === 'applied').length,
-    noReply: jobs.filter(j => j.status === 'no-reply').length,
-    rejected: jobs.filter(j => j.status === 'rejected').length,
-    reply: jobs.filter(j => j.status === 'reply').length,
-    initialInterview: jobs.filter(j => j.status === 'initial-interview').length,
-    OA: jobs.filter(j => j.status === 'OA').length,
-    finalInterview: jobs.filter(j => j.status === 'final-interview').length,
-    offer: jobs.filter(j => j.status === 'offer').length,
-    accepted: jobs.filter(j => j.status === 'accepted').length,
-  };
+  const jobHistories = jobs.map((job) => ({
+    job,
+    history: getStageHistory(job),
+  }));
+
+  const countStage = (stage: Job["status"]) =>
+    jobHistories.filter(({ history }) => history.includes(stage)).length;
 
   const totalApplied = jobs.length;
-  const totalReplies = stats.reply + stats.initialInterview + stats.OA + stats.finalInterview + stats.offer + stats.accepted;
-  const responseRate = totalApplied > 0 ? ((totalReplies / totalApplied) * 100).toFixed(1) : '0';
-  const offerRate = totalApplied > 0 ? (((stats.offer + stats.accepted) / totalApplied) * 100).toFixed(1) : '0';
+  const totalRejected = countStage('rejected');
+  const rejectedFromOA = jobHistories.filter(({ history }) =>
+    history.includes('rejected') &&
+    history.includes('OA') &&
+    !history.includes('initial-interview')
+  ).length;
+  const rejectedFromInitial = Math.max(totalRejected - rejectedFromOA, 0);
+
+  const stats = {
+    applied: totalApplied,
+    noReply: countStage('no-reply'),
+    rejected: totalRejected,
+    rejectedFromInitial,
+    rejectedFromOA,
+    reply: countStage('reply'),
+    initialInterview: countStage('initial-interview'),
+    OA: countStage('OA'),
+    finalInterview: countStage('final-interview'),
+    offer: countStage('offer'),
+    offerRejected: countStage('offer-rejected'),
+    accepted: countStage('accepted'),
+  };
+
+  const responseRate = totalApplied > 0 ? ((stats.reply / totalApplied) * 100).toFixed(1) : '0';
+  const offerRate = totalApplied > 0 ? ((stats.offer / totalApplied) * 100).toFixed(1) : '0';
+  const activeInterviews = jobHistories.filter(({ history }) =>
+    history.includes('initial-interview') || history.includes('final-interview')
+  ).length;
 
   return (
     <div className="animate-fade-in space-y-8">
@@ -43,7 +82,7 @@ export function Dashboard({ jobs }: DashboardProps) {
         </div>
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-[#d4d1c8] hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-slide-up" style={{ animationDelay: '0.3s' }}>
           <div className="text-[#7a8a7e] mb-1">Active Interviews</div>
-          <div className="text-[#8a9a8f]">{stats.initialInterview + stats.finalInterview}</div>
+          <div className="text-[#8a9a8f]">{activeInterviews}</div>
         </div>
         <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-[#d4d1c8] hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-slide-up" style={{ animationDelay: '0.4s' }}>
           <div className="text-[#7a8a7e] mb-1">Offer Rate</div>
@@ -96,6 +135,7 @@ function getStatusColor(status: string): string {
     'final-interview': 'bg-[#5a6d5e]',
     'offer': 'bg-[#c5a987]',
     'accepted': 'bg-[#6b8273]',
+    'offer-rejected': 'bg-[#d97b66]',
   };
   return colors[status] || 'bg-[#9ca8a0]';
 }
@@ -111,6 +151,7 @@ function getStatusLabel(status: string): string {
     'final-interview': 'Final Interview',
     'offer': 'Offer',
     'accepted': 'Accepted',
+    'offer-rejected': 'Offer Rejected',
   };
   return labels[status] || status;
 }

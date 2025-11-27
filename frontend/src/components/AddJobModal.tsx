@@ -94,6 +94,7 @@ export default function AddJobModal({ job, onClose, onSave }: AddJobModalProps) 
                   <option value="final-interview">Final Interview</option>
                   <option value="offer">Offer</option>
                   <option value="accepted">Accepted</option>
+                  <option value="offer-rejected">Offer Rejected</option>
                   <option value="rejected">Rejected</option>
                   <option value="no-reply">No Reply</option>
                 </select>
