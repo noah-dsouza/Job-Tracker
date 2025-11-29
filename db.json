@@ -195,13 +195,16 @@
       "userId": "1764393069938",
       "company": "doordash",
       "position": "dev",
-      "status": "applied",
+      "status": "rejected",
       "dateApplied": "2025-11-29",
       "notes": "",
       "createdAt": "2025-11-29T05:11:21.746Z",
-      "updatedAt": "2025-11-29T05:11:21.746Z",
+      "updatedAt": "2025-11-29T05:21:08.510Z",
       "stageHistory": [
-        "applied"
+        "applied",
+        "reply",
+        "OA",
+        "rejected"
       ]
     },
     {
@@ -209,13 +212,19 @@
       "userId": "1764393069938",
       "company": "uber",
       "position": "dev",
-      "status": "applied",
+      "status": "offer-rejected",
       "dateApplied": "2025-11-29",
       "notes": "",
       "createdAt": "2025-11-29T05:11:27.881Z",
-      "updatedAt": "2025-11-29T05:11:27.881Z",
+      "updatedAt": "2025-11-29T05:22:10.091Z",
       "stageHistory": [
-        "applied"
+        "applied",
+        "reply",
+        "OA",
+        "initial-interview",
+        "final-interview",
+        "offer",
+        "offer-rejected"
       ]
     },
     {
@@ -223,13 +232,70 @@
       "userId": "1764393069938",
       "company": "meta",
       "position": "dev",
-      "status": "applied",
+      "status": "accepted",
       "dateApplied": "2025-11-29",
       "notes": "",
       "createdAt": "2025-11-29T05:11:36.815Z",
-      "updatedAt": "2025-11-29T05:11:36.815Z",
+      "updatedAt": "2025-11-29T05:22:16.550Z",
       "stageHistory": [
-        "applied"
+        "applied",
+        "reply",
+        "initial-interview",
+        "final-interview",
+        "offer",
+        "accepted"
+      ]
+    },
+    {
+      "id": "1764393555688",
+      "userId": "1764393069938",
+      "company": "amazon",
+      "position": "dev",
+      "status": "rejected",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T05:19:15.688Z",
+      "updatedAt": "2025-11-29T05:21:47.088Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "initial-interview",
+        "final-interview",
+        "rejected"
+      ]
+    },
+    {
+      "id": "1764393566289",
+      "userId": "1764393069938",
+      "company": "citadel",
+      "position": "dev",
+      "status": "no-reply",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T05:19:26.289Z",
+      "updatedAt": "2025-11-29T05:20:11.155Z",
+      "stageHistory": [
+        "applied",
+        "no-reply"
+      ]
+    },
+    {
+      "id": "1764393573136",
+      "userId": "1764393069938",
+      "company": "jane street",
+      "position": "dev",
+      "status": "offer-rejected",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T05:19:33.136Z",
+      "updatedAt": "2025-11-29T05:22:22.646Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "initial-interview",
+        "final-interview",
+        "offer",
+        "offer-rejected"
       ]
     }
   ]

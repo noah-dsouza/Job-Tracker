@@ -5,6 +5,10 @@
     "moduleResolution": "node",
     "esModuleInterop": true,
     "strict": false,
-    "skipLibCheck": true
-  }
+    "skipLibCheck": true,
+    "outDir": "./dist",
+    "rootDir": "."
+  },
+  "include": ["**/*.ts"],
+  "exclude": ["node_modules", "frontend", "frontend/**/*"]
 }
