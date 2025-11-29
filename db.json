@@ -189,6 +189,48 @@
         "applied",
         "no-reply"
       ]
+    },
+    {
+      "id": "1764393081746",
+      "userId": "1764393069938",
+      "company": "doordash",
+      "position": "dev",
+      "status": "applied",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T05:11:21.746Z",
+      "updatedAt": "2025-11-29T05:11:21.746Z",
+      "stageHistory": [
+        "applied"
+      ]
+    },
+    {
+      "id": "1764393087881",
+      "userId": "1764393069938",
+      "company": "uber",
+      "position": "dev",
+      "status": "applied",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T05:11:27.881Z",
+      "updatedAt": "2025-11-29T05:11:27.881Z",
+      "stageHistory": [
+        "applied"
+      ]
+    },
+    {
+      "id": "1764393096815",
+      "userId": "1764393069938",
+      "company": "meta",
+      "position": "dev",
+      "status": "applied",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T05:11:36.815Z",
+      "updatedAt": "2025-11-29T05:11:36.815Z",
+      "stageHistory": [
+        "applied"
+      ]
     }
   ]
 }
