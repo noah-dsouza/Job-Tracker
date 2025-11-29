@@ -61,13 +61,12 @@ export default function Login({ onLogin }: LoginProps) {
       <div className="w-full max-w-md animate-fade-in">
         <div className="bg-white/90 backdrop-blur-sm rounded-3xl shadow-xl p-8 border border-[#d4d1c8]">
           <div className="text-center mb-8">
-            <div className="flex justify-center mb-4">
-              <Logo className="w-16 h-16" />
+            <div className="flex justify-center mb-2">
+              <Logo className="w-20 h-20" />
             </div>
-            <h2 className="text-[#3d5a4f] mb-2">Greenlit</h2>
-            <p className="text-[#7a8a7e]">
-              {isSignup ? "Create your account" : "Welcome back"}
-            </p>
+            {!isSignup && (
+              <p className="text-[#3d5a4f] text-lg font-medium">Welcome back</p>
+            )}
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">

@@ -33,14 +33,29 @@ export function Dashboard({ jobs }: DashboardProps) {
   const countStage = (stage: Job["status"]) =>
     jobHistories.filter(({ history }) => history.includes(stage)).length;
 
+  const countWithStages = (
+    required: Job["status"][],
+    excluded: Job["status"][] = []
+  ) =>
+    jobHistories.filter(
+      ({ history }) =>
+        required.every((stage) => history.includes(stage)) &&
+        !excluded.some((stage) => history.includes(stage))
+    ).length;
+
   const totalApplied = jobs.length;
   const totalRejected = countStage('rejected');
-  const rejectedFromOA = jobHistories.filter(({ history }) =>
-    history.includes('rejected') &&
-    history.includes('OA') &&
-    !history.includes('initial-interview')
-  ).length;
-  const rejectedFromInitial = Math.max(totalRejected - rejectedFromOA, 0);
+  const totalReplies = countStage('reply');
+  const totalInitial = countStage('initial-interview');
+  const totalFinal = countStage('final-interview');
+  const totalOA = countStage('OA');
+
+  const rejectedFromOA = countWithStages(['rejected', 'OA'], ['initial-interview']);
+  const rejectedFromInitial = countWithStages(['rejected', 'initial-interview'], ['final-interview']);
+  const rejectedFromFinal = countWithStages(['rejected', 'final-interview']);
+
+  const initialFromOA = countWithStages(['OA', 'initial-interview']);
+  const initialFromReplies = Math.max(totalInitial - initialFromOA, 0);
 
   const stats = {
     applied: totalApplied,
@@ -48,10 +63,13 @@ export function Dashboard({ jobs }: DashboardProps) {
     rejected: totalRejected,
     rejectedFromInitial,
     rejectedFromOA,
-    reply: countStage('reply'),
-    initialInterview: countStage('initial-interview'),
-    OA: countStage('OA'),
-    finalInterview: countStage('final-interview'),
+    rejectedFromFinal,
+    reply: totalReplies,
+    initialInterview: totalInitial,
+    initialFromOA,
+    initialFromReplies,
+    OA: totalOA,
+    finalInterview: totalFinal,
     offer: countStage('offer'),
     offerRejected: countStage('offer-rejected'),
     accepted: countStage('accepted'),

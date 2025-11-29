@@ -124,11 +124,11 @@ export default function App() {
   return (
     <div className="min-h-screen bg-[#f8f6f3]">
       <nav className="bg-white/80 backdrop-blur-sm border-b border-[#d4d1c8] sticky top-0 z-40">
-        <div className="max-w-7xl mx-auto px-6 py-4">
+        <div className="max-w-7xl mx-auto px-6 py-5">
           <div className="flex items-center justify-between">
 
             <div className="flex items-center">
-              <Logo className="w-14 h-14" />
+              <Logo className="w-20 h-20 md:w-24 md:h-24" />
             </div>
 
             <div className="flex gap-2">

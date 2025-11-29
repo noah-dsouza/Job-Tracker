@@ -84,6 +84,111 @@
         "offer",
         "accepted"
       ]
+    },
+    {
+      "id": "1764392210474",
+      "userId": "1764392194051",
+      "company": "google",
+      "position": "dev",
+      "status": "final-interview",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T04:56:50.474Z",
+      "updatedAt": "2025-11-29T04:59:41.958Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "OA",
+        "initial-interview",
+        "final-interview"
+      ]
+    },
+    {
+      "id": "1764392216641",
+      "userId": "1764392194051",
+      "company": "meta",
+      "position": "dev",
+      "status": "rejected",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T04:56:56.641Z",
+      "updatedAt": "2025-11-29T05:00:02.285Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "OA",
+        "initial-interview",
+        "final-interview",
+        "rejected"
+      ]
+    },
+    {
+      "id": "1764392222256",
+      "userId": "1764392194051",
+      "company": "nvidia",
+      "position": "dev",
+      "status": "offer-rejected",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T04:57:02.256Z",
+      "updatedAt": "2025-11-29T04:59:12.919Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "initial-interview",
+        "final-interview",
+        "offer",
+        "offer-rejected"
+      ]
+    },
+    {
+      "id": "1764392228263",
+      "userId": "1764392194051",
+      "company": "apple",
+      "position": "dev",
+      "status": "accepted",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T04:57:08.263Z",
+      "updatedAt": "2025-11-29T04:59:21.304Z",
+      "stageHistory": [
+        "applied",
+        "reply",
+        "initial-interview",
+        "final-interview",
+        "offer",
+        "accepted"
+      ]
+    },
+    {
+      "id": "1764392234475",
+      "userId": "1764392194051",
+      "company": "amd",
+      "position": "dev",
+      "status": "reply",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T04:57:14.475Z",
+      "updatedAt": "2025-11-29T04:57:57.414Z",
+      "stageHistory": [
+        "applied",
+        "reply"
+      ]
+    },
+    {
+      "id": "1764392241928",
+      "userId": "1764392194051",
+      "company": "doordash",
+      "position": "dev",
+      "status": "no-reply",
+      "dateApplied": "2025-11-29",
+      "notes": "",
+      "createdAt": "2025-11-29T04:57:21.928Z",
+      "updatedAt": "2025-11-29T04:58:02.370Z",
+      "stageHistory": [
+        "applied",
+        "no-reply"
+      ]
     }
   ]
 }
