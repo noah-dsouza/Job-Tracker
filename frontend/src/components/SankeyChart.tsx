@@ -7,8 +7,11 @@ interface SankeyChartProps {
     rejected: number;
     rejectedFromInitial: number;
     rejectedFromOA: number;
+    rejectedFromFinal: number;
     reply: number;
     initialInterview: number;
+    initialFromOA: number;
+    initialFromReplies: number;
     OA: number;
     finalInterview: number;
     offer: number;
@@ -47,30 +50,32 @@ export function SankeyChart({ stats }: SankeyChartProps) {
 
   // Define node positions and data
   const nodes = [
-    { id: 'applied', x: 50, y: 220, label: 'Jobs Applied', count: totalApplied, color: '#8a9a8f' },
-    { id: 'reply', x: 250, y: 100, label: 'Replies', count: stats.reply, color: '#9ca592' },
-    { id: 'no-reply', x: 250, y: 320, label: 'No Reply', count: stats.noReply, color: '#b5aea5' },
-    { id: 'initial-interview', x: 450, y: 60, label: 'Initial Interview', count: stats.initialInterview, color: '#7a8d7f' },
-    { id: 'oa', x: 450, y: 180, label: 'OA Requested', count: stats.OA, color: '#d9b5a0' },
-    { id: 'rejected', x: 450, y: 300, label: 'Rejected', count: stats.rejected, color: '#b39189' },
-    { id: 'final-interview', x: 650, y: 120, label: 'Final Interview', count: stats.finalInterview, color: '#5a6d5e' },
-    { id: 'offer', x: 850, y: 180, label: 'Offers', count: stats.offer, color: '#c5a987' },
-    { id: 'accepted', x: 850, y: 40, label: 'Accepted', count: stats.accepted, color: '#6b8273' },
-    { id: 'offer-rejected', x: 850, y: 300, label: 'Offers Rejected', count: stats.offerRejected, color: '#d97b66' },
+    { id: 'applied', x: 40, y: 210, label: 'Jobs Applied', count: totalApplied, color: '#8a9a8f' },
+    { id: 'reply', x: 240, y: 110, label: 'Replies', count: stats.reply, color: '#9ca592' },
+    { id: 'no-reply', x: 240, y: 320, label: 'No Reply', count: stats.noReply, color: '#b5aea5' },
+    { id: 'initial-interview', x: 460, y: 50, label: 'Initial Interview', count: stats.initialInterview, color: '#7a8d7f' },
+    { id: 'oa', x: 460, y: 250, label: 'OA Requested', count: stats.OA, color: '#d9b5a0' },
+    { id: 'final-interview', x: 680, y: 80, label: 'Final Interview', count: stats.finalInterview, color: '#5a6d5e' },
+    { id: 'offer', x: 900, y: 150, label: 'Offers', count: stats.offer, color: '#c5a987' },
+    { id: 'rejected', x: 900, y: 320, label: 'Rejected', count: stats.rejected, color: '#b39189' },
+    { id: 'accepted', x: 1120, y: 60, label: 'Accepted', count: stats.accepted, color: '#6b8273' },
+    { id: 'offer-rejected', x: 1120, y: 260, label: 'Offers Rejected', count: stats.offerRejected, color: '#d97b66' },
   ];
 
   // Define connections (from, to, value, color)
   const connections = [
     { from: 'applied', to: 'reply', fromSide: 'right', toSide: 'left', value: stats.reply, color: '#8a9a8f' },
     { from: 'applied', to: 'no-reply', fromSide: 'right', toSide: 'left', value: stats.noReply, color: '#b5aea5' },
-    { from: 'reply', to: 'initial-interview', fromSide: 'right', toSide: 'left', value: stats.initialInterview, color: '#7a8d7f' },
+    { from: 'reply', to: 'initial-interview', fromSide: 'right', toSide: 'left', value: stats.initialFromReplies, color: '#7a8d7f' },
     { from: 'reply', to: 'oa', fromSide: 'right', toSide: 'left', value: stats.OA, color: '#d9b5a0' },
+    { from: 'oa', to: 'initial-interview', fromSide: 'top', toSide: 'bottom', value: stats.initialFromOA, color: '#7a8d7f' },
+    { from: 'oa', to: 'rejected', fromSide: 'right', toSide: 'left', value: stats.rejectedFromOA, color: '#b39189' },
     { from: 'initial-interview', to: 'final-interview', fromSide: 'right', toSide: 'left', value: stats.finalInterview, color: '#5a6d5e' },
-    { from: 'initial-interview', to: 'rejected', fromSide: 'bottom', toSide: 'top', value: stats.rejectedFromInitial, color: '#b39189' },
-    { from: 'oa', to: 'rejected', fromSide: 'bottom', toSide: 'top', value: stats.rejectedFromOA, color: '#b39189' },
+    { from: 'initial-interview', to: 'rejected', fromSide: 'right', toSide: 'left', value: stats.rejectedFromInitial, color: '#b39189' },
     { from: 'final-interview', to: 'offer', fromSide: 'right', toSide: 'left', value: stats.offer, color: '#c5a987' },
-    { from: 'offer', to: 'accepted', fromSide: 'top', toSide: 'bottom', value: stats.accepted, color: '#6b8273' },
-    { from: 'offer', to: 'offer-rejected', fromSide: 'bottom', toSide: 'top', value: stats.offerRejected, color: '#d97b66' },
+    { from: 'final-interview', to: 'rejected', fromSide: 'right', toSide: 'left', value: stats.rejectedFromFinal, color: '#b39189' },
+    { from: 'offer', to: 'accepted', fromSide: 'right', toSide: 'left', value: stats.accepted, color: '#6b8273' },
+    { from: 'offer', to: 'offer-rejected', fromSide: 'right', toSide: 'left', value: stats.offerRejected, color: '#d97b66' },
   ];
 
   // Helper to get box edge coordinates
@@ -120,7 +125,7 @@ export function SankeyChart({ stats }: SankeyChartProps) {
 
   return (
     <div className="relative w-full overflow-x-auto">
-      <svg ref={svgRef} width="1050" height="450" viewBox="0 0 1050 450" className="w-full h-auto">
+      <svg ref={svgRef} width="1300" height="500" viewBox="0 0 1300 500" className="w-full h-auto">
         <defs>
           {/* Arrow markers */}
           <marker
