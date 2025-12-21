@@ -1,0 +1,199 @@
+"use client";
+
+import { useState } from "react";
+
+import Login from "@/components/Login";
+import Dashboard from "@/components/Dashboard";
+import JobList from "@/components/JobList";
+import AddJobModal from "@/components/AddJobModal";
+import AIMatchScore from "@/components/AIMatchScore";
+import ResumeUpload from "@/components/ResumeUpload";
+import Logo from "@/components/Logo";
+
+import {
+  createJob,
+  updateJob,
+  deleteJob,
+  getJobsFromStorage,
+} from "@/lib/api";
+
+export type JobStatus =
+  | "applied"
+  | "reply"
+  | "initial-interview"
+  | "OA"
+  | "final-interview"
+  | "offer"
+  | "accepted"
+  | "offer-rejected"
+  | "rejected"
+  | "no-reply";
+
+export interface Job {
+  id: string;
+  company: string;
+  position: string;
+  status: JobStatus;
+  dateApplied: string;
+  notes?: string;
+  matchScore?: number;
+  stageHistory?: JobStatus[];
+}
+
+const NAV_VIEWS = ["dashboard", "jobs", "ai-match", "resume"] as const;
+type View = (typeof NAV_VIEWS)[number];
+
+export default function App() {
+  const [authToken, setAuthToken] = useState<string | null>(() => {
+    if (typeof window === "undefined") return null;
+    return window.localStorage.getItem("token");
+  });
+  const [currentView, setCurrentView] = useState<View>("dashboard");
+
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingJob, setEditingJob] = useState<Job | null>(null);
+  const [resumeText, setResumeText] = useState("");
+
+  const [jobs, setJobs] = useState<Job[]>(() => {
+    if (typeof window === "undefined") return [];
+    const token = window.localStorage.getItem("token");
+    if (!token) return [];
+    return getJobsFromStorage(token);
+  });
+  const isAuthenticated = Boolean(authToken);
+
+  const handleAddJob = async (job: Omit<Job, "id">) => {
+    if (!authToken) return;
+
+    const result = await createJob(authToken, job);
+    setJobs((prev) => [...prev, result]);
+    setIsModalOpen(false);
+  };
+
+  const handleEditJob = async (job: Job) => {
+    if (!authToken) return;
+
+    const existingJob = jobs.find((j) => j.id === job.id);
+    let stageHistory = existingJob?.stageHistory ?? [existingJob?.status ?? job.status];
+
+    if (existingJob && existingJob.status !== job.status) {
+      stageHistory = Array.from(new Set([...stageHistory, job.status]));
+    }
+
+    const jobToSave = { ...job, stageHistory };
+
+    const result = await updateJob(authToken, job.id, jobToSave);
+    setJobs((prev) => prev.map((j) => (j.id === job.id ? result : j)));
+    setIsModalOpen(false);
+    setEditingJob(null);
+  };
+
+  const handleDeleteJob = async (id: string) => {
+    if (!authToken) return;
+
+    await deleteJob(authToken, id);
+    setJobs((prev) => prev.filter((j) => j.id !== id));
+  };
+
+  const openEditModal = (job: Job) => {
+    setEditingJob(job);
+    setIsModalOpen(true);
+  };
+
+  const handleLogout = () => {
+    localStorage.removeItem("token");
+    setAuthToken(null);
+    setJobs([]);
+    setCurrentView("dashboard");
+  };
+
+  const handleLoginSuccess = (token: string) => {
+    setAuthToken(token);
+    setJobs(getJobsFromStorage(token));
+    setCurrentView("dashboard");
+  };
+
+  if (!isAuthenticated) {
+    return (
+      <Login
+        onLogin={handleLoginSuccess}
+      />
+    );
+  }
+
+  return (
+    <div className="min-h-screen bg-[#f8f6f3]">
+      <nav className="bg-white/80 backdrop-blur-sm border-b border-[#d4d1c8] sticky top-0 z-40">
+        <div className="max-w-7xl mx-auto px-6 py-3">
+          <div className="flex items-center justify-between">
+
+            <div className="flex items-center">
+              <Logo className="w-12 h-12" />
+            </div>
+
+            <div className="flex gap-2">
+              {NAV_VIEWS.map((view) => (
+                <button
+                  key={view}
+                  onClick={() => setCurrentView(view)}
+                  className={`px-4 py-2 rounded-lg transition-all duration-300 ${
+                    currentView === view
+                      ? "bg-[#8a9a8f] text-white shadow-md"
+                      : "text-[#5a6d5e] hover:bg-[#e8e6df]"
+                  }`}
+                >
+                  {view === "ai-match"
+                    ? "AI Match"
+                    : view.charAt(0).toUpperCase() + view.slice(1)}
+                </button>
+              ))}
+
+              <div className="flex gap-2">
+                <button
+                  onClick={() => {
+                    setEditingJob(null);
+                    setIsModalOpen(true);
+                  }}
+                  className="px-4 py-2 rounded-lg bg-[#6b8273] text-white hover:bg-[#5a6d5e] transition-all duration-300 hover:shadow-lg hover:-translate-y-0.5"
+                >
+                  + Add Job
+                </button>
+                <button
+                  onClick={handleLogout}
+                  className="px-4 py-2 rounded-lg border border-[#d4d1c8] text-[#5a6d5e] hover:bg-[#e8e6df] transition-all duration-300"
+                >
+                  Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </nav>
+
+      <main className="max-w-7xl mx-auto px-6 py-8">
+        {currentView === "dashboard" && <Dashboard jobs={jobs} />}
+        {currentView === "jobs" && (
+          <JobList jobs={jobs} onEdit={openEditModal} onDelete={handleDeleteJob} />
+        )}
+        {currentView === "ai-match" && <AIMatchScore jobs={jobs} />}
+        {currentView === "resume" && (
+          <ResumeUpload resumeText={resumeText} onResumeChange={setResumeText} />
+        )}
+      </main>
+
+      {isModalOpen && (
+        <AddJobModal
+          job={editingJob}
+          onClose={() => {
+            setIsModalOpen(false);
+            setEditingJob(null);
+          }}
+          onSave={(job) => {
+            if (editingJob) handleEditJob(job as Job);
+            else handleAddJob(job as Omit<Job, "id">);
+          }}
+        />
+      )}
+    </div>
+  );
+}
