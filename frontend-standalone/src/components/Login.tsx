@@ -117,10 +117,6 @@ export default function Login({ onLogin }: LoginProps) {
                 ? "Already have an account? Sign in"
                 : "Don't have an account? Sign up"}
             </button>
-            <p className="text-sm text-[#7b8578]">
-              All data — including login details — stays in your browser. You can
-              deploy this UI on Vercel without any backend.
-            </p>
           </div>
         </div>
       </div>
