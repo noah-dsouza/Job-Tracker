@@ -1,35 +1,99 @@
 Greenlit Job Tracker 💼⚡️
-Full-stack job-search command center with a Next.js interface, AI-driven match scoring and a lightweight Express/Prisma backend. Seamlessly log applications, visualize funnel health, upload resumes for stage prep, and experiment with client-only storage for quick deployments.
+
+A full-stack job-search command center built for people who take their funnel seriously.
+
+Greenlit helps you log applications, visualize pipeline health, prep resumes by stage, and rank opportunities using AI-driven match scoring — all wrapped in a slick Next.js App Router UI with a lightweight Express + Prisma backend.
+Bonus: a client-only local-storage mode for instant zero-backend deploys.
 
 ✨ Features
+🎛 Unified Dashboard
 
-🎛 Unified Dashboard – Stat cards, Sankey-style flow, and recent activity feed show replies, interviews, offers, and attrition at a glance.
-📋 Smart Job Manager – Add/edit modal with history tracking, kanban-style job list, and stage-aware badges.
-🤖 AI Match Insights – Feed resumes + job notes into Groq-powered scoring for prioritizing outreach.
-📄 Resume Lab – Upload text, keep versioned notes, and prep responses without leaving the app.
-🔐 Auth Options – Express/Prisma backend for multiuser workflows, plus a local-storage-only frontend clone for instant Vercel/Render deploys.
+Stat cards for replies, interviews, offers, and rejections
+
+Sankey-style funnel visualization
+
+Recent activity feed for quick pulse checks
+
+📋 Smart Job Manager
+
+Add/Edit modal with history tracking
+
+Kanban-style job board
+
+Stage-aware badges and status logic
+
+🤖 AI Match Insights
+
+Feed resumes + job notes into Groq-powered scoring
+
+Prioritize outreach based on relevance, not vibes
+
+📄 Resume Lab
+
+Upload resume text
+
+Keep versioned notes per role
+
+Prep responses without leaving the app
+
+🔐 Flexible Auth Modes
+
+Express + Prisma backend for multi-user workflows
+
+Frontend-only localStorage clone for instant Vercel/Render deploys
 
 🧱 Tech Stack
 Frontend (folder: frontend-standalone)
 
-Next.js App Router, TypeScript, React 18
-Tailwind CSS 4, Radix UI, Lucide icons, Sonner toasts, Embla carousel
-Custom hooks/utilities for modal state, job history, and responsive layout
+Next.js (App Router)
+
+TypeScript
+
+React 18
+
+Tailwind CSS v4
+
+Radix UI
+
+Lucide Icons
+
+Sonner Toasts
+
+Embla Carousel
+
+Custom hooks for modal state, job history, and responsive layout
+
 Backend (project root)
 
-Node.js + Express REST API
-Prisma ORM with PostgreSQL
-Multer for resume uploads, bcrypt/JWT auth middleware, Groq SDK for AI scoring
+Node.js + Express (REST API)
+
+Prisma ORM
+
+PostgreSQL
+
+Multer (resume uploads)
+
+bcrypt + JWT auth middleware
+
+Groq SDK (AI match scoring)
+
 Shared Tooling
 
-🔧 Getting Started
+ESLint
 
-# Backend API
+Prettier
+
+Zod (validation)
+
+🔧 Getting Started
+Backend API
 cd Job-Tracker
 npm install
-npm run dev    # http://localhost:2000
+npm run dev
+# http://localhost:2000
 
-# Standalone Frontend (local-storage mode)
+Standalone Frontend (Local-Storage Mode)
 cd frontend-standalone
 npm install
-npm run dev    # http://localhost:3000
+npm run dev
+# http://localhost:3000
