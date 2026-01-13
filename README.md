@@ -36,7 +36,7 @@ Greenlit pairs a modern **Next.js App Router frontend** with a **lightweight Exp
 ## 🧱 Tech Stack
 
 ### Frontend 
-- Next.js (App Router)
+- Next.js 
 - TypeScript
 - React 18
 - Tailwind CSS v4
@@ -44,7 +44,7 @@ Greenlit pairs a modern **Next.js App Router frontend** with a **lightweight Exp
 - Lucide Icons
 
 ### Backend 
-- Node.js + Express (REST API)
+- Node.js + Express REST API
 - Prisma ORM
 - PostgreSQL
 - Multer (resume uploads)
