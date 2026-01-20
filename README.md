@@ -50,6 +50,7 @@ Greenlit pairs a modern **Next.js App Router frontend** with a **lightweight Exp
 - Multer (resume uploads)
 - bcrypt + JWT authentication
 - Groq SDK (AI match scoring)
+- Mongo DB Atlast
 
 ---
 
