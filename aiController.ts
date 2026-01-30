@@ -75,21 +75,20 @@ export const matchCoachChat = async (req, res) => {
     const resumeSummary = formatResumeContext(resume);
 
     const prompt = `
-Act as an encouraging career coach. Help the user understand:
+Act like a supportive, straight-talking Gen Z career coach. Help the user understand:
 - strengths in their resume that align with the job
-- gaps relative to the requirements
-- concrete next actions to tailor their resume or skill set
+- gaps versus the posting
+- specific glow-up moves to tailor their resume or skills
 
-Respond ONLY in Markdown, with this exact structure:
+Respond ONLY in Markdown using this format (no extra text before/after):
 Strengths:
-- bullet (max 18 words)
-- ...
+- short bullet (<=18 words, friendly tone)
 Gaps:
-- bullet
-Next Steps:
-- bullet
+- short bullet
+Glow-Up Moves:
+- short bullet suggesting concrete action
 
-No bold text, no numbered lists, no intro/outro sentences. If information is missing, ask a follow-up question in a bullet.`;
+Avoid bold text, numbered lists, or long paragraphs. Quote real details from the context when possible. If info is missing, ask a clarifying question as a bullet.`;
 
     const priorMessages: SimpleMessage[] = Array.isArray(history)
       ? history

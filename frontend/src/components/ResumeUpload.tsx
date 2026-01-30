@@ -278,8 +278,13 @@ function isSupportedFile(file: File) {
 
 function toList(text?: string | null) {
   if (!text) return [];
-  return text
-    .split(/[\n•]/)
-    .map((item) => item.replace(/^[\s•-]+/, "").trim())
+  const normalized = text
+    .replace(/•/g, "\n")
+    .replace(/[-–]\s+/g, "\n")
+    .replace(/([.!?])\s+(?=[A-Z0-9])/g, "$1\n");
+
+  return normalized
+    .split(/\n+/)
+    .map((item) => item.trim())
     .filter(Boolean);
 }

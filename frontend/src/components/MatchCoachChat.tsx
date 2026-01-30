@@ -23,7 +23,7 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const messagesEndRef = useRef<HTMLDivElement | null>(null);
+  const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 
   const currentJob = useMemo(() => {
     if (!jobs.length) return null;
@@ -112,7 +112,9 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
   };
 
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    const el = messagesContainerRef.current;
+    if (!el) return;
+    el.scrollTop = el.scrollHeight;
   }, [messages, isLoading]);
 
   if (!jobs.length) {
@@ -165,7 +167,10 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
         )}
       </div>
 
-      <div className="space-y-3 max-h-80 overflow-y-auto pr-1 mb-6">
+      <div
+        ref={messagesContainerRef}
+        className="space-y-3 max-h-80 overflow-y-auto pr-1 mb-6"
+      >
         {messages.map((msg, index) => (
           <div
             key={`${msg.role}-${index}-${msg.content.slice(0, 10)}`}
@@ -183,7 +188,6 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
             <Loader2 className="w-4 h-4 animate-spin" /> Coach is thinking...
           </div>
         )}
-        <div ref={messagesEndRef} />
       </div>
 
       {error && (
