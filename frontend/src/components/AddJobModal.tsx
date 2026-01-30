@@ -15,6 +15,7 @@ export default function AddJobModal({ job, onClose, onSave }: AddJobModalProps) 
     status: job?.status || "applied",
     dateApplied: job?.dateApplied || new Date().toISOString().split("T")[0],
     notes: job?.notes || "",
+    description: job?.description || "",
   });
 
   useEffect(() => {
@@ -122,6 +123,19 @@ export default function AddJobModal({ job, onClose, onSave }: AddJobModalProps) 
                 className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] resize-none"
                 rows={4}
               />
+            </div>
+
+            <div className="space-y-2 animate-fade-in" style={{ animationDelay: "0.38s" }}>
+              <label htmlFor="description" className="text-[#5a6d5e] block">Job Description</label>
+              <textarea
+                id="description"
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                className="w-full px-4 py-3 rounded-xl bg-[#f5f3ed] border border-[#e0ddd0] text-[#3d5a4f] resize-none"
+                rows={4}
+                placeholder="Paste the core responsibilities or a summary from the posting"
+              />
+              <p className="text-xs text-[#7a8a7e]">Adding more detail helps AI calculate better match scores.</p>
             </div>
 
             <div className="flex gap-3 pt-4 animate-fade-in" style={{ animationDelay: "0.4s" }}>

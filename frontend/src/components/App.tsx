@@ -10,7 +10,15 @@ import AIMatchScore from "@/components/AIMatchScore";
 import ResumeUpload from "@/components/ResumeUpload";
 import Logo from "@/components/Logo";
 
-import { getJobs, createJob, updateJob, deleteJob } from "@/lib/api";
+import {
+  getJobs,
+  createJob,
+  updateJob,
+  deleteJob,
+  evaluateResumeUpload,
+  fetchMatchScore,
+  type ResumeAnalysis,
+} from "@/lib/api";
 
 export type JobStatus =
   | "applied"
@@ -32,6 +40,8 @@ export interface Job {
   dateApplied: string;
   notes?: string;
   matchScore?: number;
+  description?: string;
+  matchReason?: string;
   stageHistory?: JobStatus[];
 }
 
@@ -44,8 +54,66 @@ export default function App() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [resumeText, setResumeText] = useState("");
+  const [resumeAnalysis, setResumeAnalysis] = useState<ResumeAnalysis | null>(null);
+  const [resumeStatus, setResumeStatus] = useState<"idle" | "uploading" | "success" | "error">("idle");
+  const [resumeError, setResumeError] = useState<string | null>(null);
+  const [matchError, setMatchError] = useState<string | null>(null);
 
   const [jobs, setJobs] = useState<Job[]>([]);
+
+  const handleResumeTextChange = (text: string) => {
+    setResumeText(text);
+    setResumeAnalysis(null);
+    setResumeStatus("idle");
+    setResumeError(null);
+  };
+
+  const analyzeResume = async (payload: { file?: File; text?: string }) => {
+    const token = localStorage.getItem("token");
+    if (!token) return;
+
+    setResumeStatus("uploading");
+    setResumeError(null);
+
+    try {
+      const result = await evaluateResumeUpload(token, payload);
+      setResumeText(result.resumeText);
+      setResumeAnalysis(result.analysis);
+      setResumeStatus("success");
+    } catch (err) {
+      console.error("Resume analysis failed", err);
+      setResumeStatus("error");
+      const message =
+        err instanceof Error ? err.message : "Resume analysis failed.";
+      setResumeError(message);
+    }
+  };
+
+  const runMatchScoring = async (jobInput: {
+    company: string;
+    position: string;
+    description?: string;
+  }) => {
+    const token = localStorage.getItem("token");
+    if (!token) return null;
+
+    try {
+      setMatchError(null);
+      const result = await fetchMatchScore(token, {
+        company: jobInput.company,
+        role: jobInput.position,
+        description: jobInput.description || "",
+        resumeText,
+      });
+      return result;
+    } catch (err) {
+      console.error("AI match scoring failed", err);
+      const message =
+        err instanceof Error ? err.message : "AI match scoring failed.";
+      setMatchError(`${message} Job was saved without an AI score.`);
+      return null;
+    }
+  };
 
   const loadJobs = useCallback(async (token: string) => {
     try {
@@ -71,7 +139,19 @@ export default function App() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const result = await createJob(token, job);
+    const aiResult = await runMatchScoring({
+      company: job.company,
+      position: job.position,
+      description: job.description,
+    });
+
+    const payload = {
+      ...job,
+      matchScore: aiResult?.score ?? job.matchScore,
+      matchReason: aiResult?.reason ?? job.matchReason,
+    };
+
+    const result = await createJob(token, payload);
     if (!result.error) {
       setJobs((prev) => [...prev, result]);
       setIsModalOpen(false);
@@ -82,7 +162,32 @@ export default function App() {
     const token = localStorage.getItem("token");
     if (!token) return;
 
-    const result = await updateJob(token, job.id, job);
+    const existingJob = jobs.find((j) => j.id === job.id);
+    let payload: Job = existingJob ? { ...existingJob, ...job } : job;
+
+    const needsRescore =
+      existingJob &&
+      (existingJob.company !== payload.company ||
+        existingJob.position !== payload.position ||
+        (existingJob.description || "") !== (payload.description || ""));
+
+    if (needsRescore) {
+      const aiResult = await runMatchScoring({
+        company: payload.company,
+        position: payload.position,
+        description: payload.description,
+      });
+
+      if (aiResult) {
+        payload = {
+          ...payload,
+          matchScore: aiResult.score,
+          matchReason: aiResult.reason,
+        };
+      }
+    }
+
+    const result = await updateJob(token, job.id, payload);
     if (!result.error) {
       setJobs((prev) => prev.map((j) => (j.id === job.id ? result : j)));
       setIsModalOpen(false);
@@ -108,6 +213,11 @@ export default function App() {
     setIsAuthenticated(false);
     setJobs([]);
     setCurrentView("dashboard");
+    setResumeText("");
+    setResumeAnalysis(null);
+    setResumeStatus("idle");
+    setResumeError(null);
+    setMatchError(null);
   };
 
   if (!isAuthenticated) {
@@ -171,13 +281,31 @@ export default function App() {
       </nav>
 
       <main className="max-w-7xl mx-auto px-6 py-8">
+        {matchError && (
+          <div className="mb-6 flex items-center justify-between rounded-2xl border border-[#f5c6ab] bg-[#fff7f2] px-4 py-3 text-sm text-[#7a4432]">
+            <span>{matchError}</span>
+            <button
+              onClick={() => setMatchError(null)}
+              className="rounded-lg px-3 py-1 text-[#7a4432] transition-colors duration-200 hover:bg-[#f5c6ab]/30"
+            >
+              Dismiss
+            </button>
+          </div>
+        )}
         {currentView === "dashboard" && <Dashboard jobs={jobs} />}
         {currentView === "jobs" && (
           <JobList jobs={jobs} onEdit={openEditModal} onDelete={handleDeleteJob} />
         )}
         {currentView === "ai-match" && <AIMatchScore jobs={jobs} />}
         {currentView === "resume" && (
-          <ResumeUpload resumeText={resumeText} onResumeChange={setResumeText} />
+          <ResumeUpload
+            resumeText={resumeText}
+            analysis={resumeAnalysis}
+            status={resumeStatus}
+            error={resumeError}
+            onResumeChange={handleResumeTextChange}
+            onSubmit={analyzeResume}
+          />
         )}
       </main>
 

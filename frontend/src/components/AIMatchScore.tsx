@@ -6,22 +6,34 @@ interface AIMatchScoreProps {
 }
 
 export function AIMatchScore({ jobs }: AIMatchScoreProps) {
-  // Calculate average match score
-  const jobsWithScores = jobs.filter(j => j.matchScore && j.matchScore > 0);
-  const avgMatchScore = jobsWithScores.length > 0
-    ? Math.round(jobsWithScores.reduce((sum, j) => sum + (j.matchScore || 0), 0) / jobsWithScores.length)
-    : 0;
+  const scoredJobs = jobs.filter(
+    (job): job is Job & { matchScore: number } =>
+      typeof job.matchScore === "number"
+  );
 
-  // Get top matches
-  const topMatches = [...jobs]
-    .filter(j => j.matchScore && j.matchScore > 0)
+  const avgMatchScore =
+    scoredJobs.length > 0
+      ? Math.round(
+          scoredJobs.reduce(
+            (sum, job) => sum + (job.matchScore ?? 0),
+            0
+          ) / scoredJobs.length
+        )
+      : 0;
+
+  const topMatches = [...scoredJobs]
     .sort((a, b) => (b.matchScore || 0) - (a.matchScore || 0))
     .slice(0, 5);
 
-  // Calculate insights
-  const highMatchJobs = jobs.filter(j => (j.matchScore || 0) >= 80).length;
-  const mediumMatchJobs = jobs.filter(j => (j.matchScore || 0) >= 60 && (j.matchScore || 0) < 80).length;
-  const lowMatchJobs = jobs.filter(j => (j.matchScore || 0) > 0 && (j.matchScore || 0) < 60).length;
+  const highMatchJobs = scoredJobs.filter(
+    (job) => (job.matchScore || 0) >= 80
+  ).length;
+  const mediumMatchJobs = scoredJobs.filter(
+    (job) => (job.matchScore || 0) >= 60 && (job.matchScore || 0) < 80
+  ).length;
+  const lowMatchJobs = scoredJobs.filter(
+    (job) => (job.matchScore || 0) < 60
+  ).length;
 
   return (
     <div className="animate-fade-in space-y-8">
@@ -42,7 +54,7 @@ export function AIMatchScore({ jobs }: AIMatchScoreProps) {
             <span className="text-3xl">%</span>
           </div>
           <div className="pb-2 text-white/80 animate-fade-in" style={{ animationDelay: '0.4s' }}>
-            Based on {jobsWithScores.length} applications
+            Based on {scoredJobs.length} applications
           </div>
         </div>
       </div>
@@ -87,55 +99,61 @@ export function AIMatchScore({ jobs }: AIMatchScoreProps) {
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-[#d4d1c8] animate-slide-up" style={{ animationDelay: '0.4s' }}>
         <h3 className="text-[#3d5a4f] mb-6">Top Matches</h3>
         <div className="space-y-4">
-          {topMatches.map((job, index) => (
-            <div
-              key={job.id}
-              className="flex items-center justify-between p-5 rounded-xl bg-[#f8f6f3] hover:bg-[#eae8df] transition-all duration-300 animate-fade-in"
-              style={{ animationDelay: `${0.5 + index * 0.1}s` }}
-            >
-              <div className="flex-1">
-                <div className="text-[#3d5a4f] mb-1">{job.position}</div>
-                <div className="text-[#7a8a7e]">{job.company}</div>
-                {getMatchReason(job.matchScore || 0) && (
-                  <div className="mt-2 text-[#7a8a7e] text-sm">
-                    {getMatchReason(job.matchScore || 0)}
-                  </div>
-                )}
-              </div>
-              <div className="flex items-center gap-4">
-                <div className="text-right">
-                  <div className="text-2xl text-[#6b8273] animate-scale-in" style={{ animationDelay: `${0.6 + index * 0.1}s` }}>
-                    {job.matchScore}%
-                  </div>
-                  <div className="text-[#7a8a7e] text-sm">match</div>
+          {topMatches.map((job, index) => {
+            const matchReason = getDisplayedReason(job);
+            return (
+              <div
+                key={job.id}
+                className="flex items-center justify-between p-5 rounded-xl bg-[#f8f6f3] hover:bg-[#eae8df] transition-all duration-300 animate-fade-in"
+                style={{ animationDelay: `${0.5 + index * 0.1}s` }}
+              >
+                <div className="flex-1">
+                  <div className="text-[#3d5a4f] mb-1">{job.position}</div>
+                  <div className="text-[#7a8a7e]">{job.company}</div>
+                  {matchReason && (
+                    <div className="mt-2 text-[#7a8a7e] text-sm">
+                      {matchReason}
+                    </div>
+                  )}
                 </div>
-                <div className="relative w-16 h-16">
-                  <svg className="w-16 h-16 transform -rotate-90">
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke="#e0ddd0"
-                      strokeWidth="6"
-                      fill="none"
-                    />
-                    <circle
-                      cx="32"
-                      cy="32"
-                      r="28"
-                      stroke={getScoreColor(job.matchScore || 0)}
-                      strokeWidth="6"
-                      fill="none"
-                      strokeDasharray={`${2 * Math.PI * 28}`}
-                      strokeDashoffset={`${2 * Math.PI * 28 * (1 - (job.matchScore || 0) / 100)}`}
-                      className="transition-all duration-1000 ease-out"
-                      style={{ animationDelay: `${0.7 + index * 0.1}s` }}
-                    />
-                  </svg>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <div
+                      className="text-2xl text-[#6b8273] animate-scale-in"
+                      style={{ animationDelay: `${0.6 + index * 0.1}s` }}
+                    >
+                      {job.matchScore}%
+                    </div>
+                    <div className="text-[#7a8a7e] text-sm">match</div>
+                  </div>
+                  <div className="relative w-16 h-16">
+                    <svg className="w-16 h-16 transform -rotate-90">
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke="#e0ddd0"
+                        strokeWidth="6"
+                        fill="none"
+                      />
+                      <circle
+                        cx="32"
+                        cy="32"
+                        r="28"
+                        stroke={getScoreColor(job.matchScore || 0)}
+                        strokeWidth="6"
+                        fill="none"
+                        strokeDasharray={`${2 * Math.PI * 28}`}
+                        strokeDashoffset={`${2 * Math.PI * 28 * (1 - (job.matchScore || 0) / 100)}`}
+                        className="transition-all duration-1000 ease-out"
+                        style={{ animationDelay: `${0.7 + index * 0.1}s` }}
+                      />
+                    </svg>
+                  </div>
                 </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
         </div>
 
         {topMatches.length === 0 && (
@@ -188,6 +206,16 @@ export function AIMatchScore({ jobs }: AIMatchScoreProps) {
       </div>
     </div>
   );
+}
+
+function getDisplayedReason(job: Job): string | null {
+  if (job.matchReason && job.matchReason.trim().length > 0) {
+    return job.matchReason.trim();
+  }
+  if (typeof job.matchScore === "number") {
+    return getMatchReason(job.matchScore);
+  }
+  return null;
 }
 
 function getScoreColor(score: number): string {

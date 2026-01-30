@@ -1,82 +1,75 @@
-import { useState, useRef } from 'react';
-import { Upload, FileText, Check, Sparkles } from 'lucide-react';
+import { useState, useRef } from "react";
+import {
+  Upload,
+  FileText,
+  Check,
+  Sparkles,
+  Loader2,
+  AlertCircle,
+} from "lucide-react";
+import type { ResumeAnalysis } from "@/lib/api";
 
 interface ResumeUploadProps {
   resumeText: string;
+  analysis: ResumeAnalysis | null;
+  status: "idle" | "uploading" | "success" | "error";
+  error?: string | null;
   onResumeChange: (text: string) => void;
+  onSubmit: (payload: { file?: File; text?: string }) => Promise<void>;
 }
 
-export function ResumeUpload({ resumeText, onResumeChange }: ResumeUploadProps) {
+export function ResumeUpload({
+  resumeText,
+  analysis,
+  status,
+  error,
+  onResumeChange,
+  onSubmit,
+}: ResumeUploadProps) {
   const [isDragging, setIsDragging] = useState(false);
-  const [uploadStatus, setUploadStatus] = useState<'idle' | 'uploading' | 'success'>('idle');
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleDragOver = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(true);
-  };
+  const isProcessing = status === "uploading";
+  const hasText = resumeText.trim().length > 0;
 
-  const handleDragLeave = () => {
-    setIsDragging(false);
-  };
+  const handleFile = async (file: File) => {
+    if (!isSupportedFile(file)) {
+      alert("Please upload a PDF, DOCX, or TXT file.");
+      return;
+    }
 
-  const handleDrop = (e: React.DragEvent) => {
-    e.preventDefault();
-    setIsDragging(false);
-    
-    const files = e.dataTransfer.files;
-    if (files.length > 0) {
-      handleFile(files[0]);
+    try {
+      await onSubmit({ file });
+    } catch {
+      // parent component surfaces an error banner
     }
   };
 
-  const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileSelect = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
+    if (!files || files.length === 0) return;
+    await handleFile(files[0]);
+    e.target.value = "";
+  };
+
+  const handleDrop = async (e: React.DragEvent) => {
+    e.preventDefault();
+    setIsDragging(false);
+    if (isProcessing) return;
+
+    const files = e.dataTransfer.files;
     if (files && files.length > 0) {
-      handleFile(files[0]);
+      await handleFile(files[0]);
     }
   };
 
-  const handleFile = (file: File) => {
-    if (file.type === 'application/pdf' || file.type === 'text/plain' || file.name.endsWith('.docx')) {
-      setUploadStatus('uploading');
-      
-      // Simulate file upload and processing
-      setTimeout(() => {
-        // In a real app, this would extract text from the file
-        const mockResumeText = `John Doe
-Software Engineer
+  const handleAnalyzeText = async () => {
+    if (!hasText || isProcessing) return;
 
-EXPERIENCE
-Senior Frontend Developer at Tech Corp (2022-Present)
-- Developed React applications with TypeScript
-- Led team of 5 developers
-- Implemented CI/CD pipelines
-
-Frontend Developer at StartupXYZ (2020-2022)
-- Built responsive web applications
-- Collaborated with design team
-- Optimized performance
-
-SKILLS
-JavaScript, TypeScript, React, Node.js, Python, AWS, Docker, Git
-
-EDUCATION
-Bachelor of Science in Computer Science
-University of Technology (2016-2020)`;
-
-        onResumeChange(mockResumeText);
-        setUploadStatus('success');
-      }, 1500);
-    } else {
-      alert('Please upload a PDF, TXT, or DOCX file');
-    }
-  };
-
-  const handleTextChange = (text: string) => {
-    onResumeChange(text);
-    if (text && uploadStatus === 'idle') {
-      setUploadStatus('success');
+    try {
+      await onSubmit({ text: resumeText });
+    } catch {
+      // error handled by parent
     }
   };
 
@@ -84,109 +77,154 @@ University of Technology (2016-2020)`;
     <div className="animate-fade-in space-y-8">
       <div>
         <h2 className="text-[#3d5a4f] mb-2">Your Resume</h2>
-        <p className="text-[#7a8a7e]">Upload or paste your resume to get AI-powered job matching</p>
+        <p className="text-[#7a8a7e]">
+          Upload a resume or paste the text so AI can personalize match scores.
+        </p>
       </div>
 
       {/* Upload Area */}
-      {!resumeText && (
-        <div
-          onDragOver={handleDragOver}
-          onDragLeave={handleDragLeave}
-          onDrop={handleDrop}
-          className={`bg-white/80 backdrop-blur-sm rounded-2xl p-12 border-2 border-dashed transition-all duration-300 cursor-pointer animate-slide-up ${
-            isDragging
-              ? 'border-[#6b8273] bg-[#6b8273]/5'
-              : 'border-[#d4d1c8] hover:border-[#8a9a8f]'
-          }`}
-          onClick={() => fileInputRef.current?.click()}
-        >
-          <div className="text-center">
-            {uploadStatus === 'uploading' ? (
-              <div className="space-y-4">
-                <div className="flex justify-center">
-                  <div className="animate-spin rounded-full h-16 w-16 border-4 border-[#d4d1c8] border-t-[#6b8273]" />
-                </div>
-                <p className="text-[#5a6d5e]">Processing your resume...</p>
+      <div
+        onDragOver={(e) => {
+          e.preventDefault();
+          if (!isProcessing) setIsDragging(true);
+        }}
+        onDragLeave={() => setIsDragging(false)}
+        onDrop={handleDrop}
+        className={`bg-white/80 backdrop-blur-sm rounded-2xl p-12 border-2 border-dashed transition-all duration-300 cursor-pointer animate-slide-up ${
+          isDragging
+            ? "border-[#6b8273] bg-[#6b8273]/5"
+            : "border-[#d4d1c8] hover:border-[#8a9a8f]"
+        } ${isProcessing ? "opacity-70 pointer-events-none" : ""}`}
+        onClick={() => fileInputRef.current?.click()}
+      >
+        <div className="text-center space-y-4">
+          {isProcessing ? (
+            <>
+              <Loader2 className="mx-auto h-12 w-12 animate-spin text-[#6b8273]" />
+              <p className="text-[#5a6d5e]">Analyzing your resume...</p>
+            </>
+          ) : (
+            <>
+              <div className="flex justify-center mb-4">
+                <Upload className="w-16 h-16 text-[#8a9a8f]" />
               </div>
-            ) : (
-              <>
-                <div className="flex justify-center mb-4">
-                  <Upload className="w-16 h-16 text-[#8a9a8f]" />
-                </div>
-                <h3 className="text-[#3d5a4f] mb-2">Upload Your Resume</h3>
-                <p className="text-[#7a8a7e] mb-4">
-                  Drag and drop your file here, or click to browse
-                </p>
-                <p className="text-[#7a8a7e]">
-                  Supports PDF, DOCX, and TXT files
-                </p>
-              </>
-            )}
-          </div>
-          <input
-            ref={fileInputRef}
-            type="file"
-            accept=".pdf,.docx,.txt"
-            onChange={handleFileSelect}
-            className="hidden"
-          />
+              <h3 className="text-[#3d5a4f] mb-2">Upload Your Resume</h3>
+              <p className="text-[#7a8a7e] mb-2">
+                Drag & drop a file here, or click to browse
+              </p>
+              <p className="text-[#7a8a7e] text-sm">
+                Supports PDF, DOCX, and TXT files. We store only the parsed
+                text.
+              </p>
+            </>
+          )}
         </div>
-      )}
+        <input
+          ref={fileInputRef}
+          type="file"
+          accept=".pdf,.docx,.txt"
+          onChange={handleFileSelect}
+          className="hidden"
+        />
+      </div>
 
       {/* Manual Entry */}
       <div className="space-y-4">
         <div className="flex items-center justify-between">
           <h3 className="text-[#3d5a4f]">
-            {resumeText ? 'Edit Resume' : 'Or paste your resume text'}
+            {resumeText ? "Edit Resume Text" : "Or paste your resume text"}
           </h3>
-          {uploadStatus === 'success' && (
+          {status === "success" && (
             <div className="flex items-center gap-2 text-[#6b8273] animate-fade-in">
               <Check className="w-5 h-5" />
-              <span>Resume saved</span>
+              <span>Analysis saved</span>
             </div>
           )}
         </div>
 
         <textarea
           value={resumeText}
-          onChange={(e) => handleTextChange(e.target.value)}
+          onChange={(e) => onResumeChange(e.target.value)}
           className="w-full px-6 py-4 rounded-2xl bg-white/80 backdrop-blur-sm border border-[#d4d1c8] text-[#3d5a4f] focus:outline-none focus:ring-2 focus:ring-[#8a9a8f] focus:border-transparent transition-all duration-300 resize-none"
-          rows={15}
-          placeholder="Paste your resume here or upload a file above..."
+          rows={12}
+          placeholder="Paste your resume here to analyze without uploading a file..."
         />
+
+        <div className="flex flex-col gap-3 md:flex-row md:items-center">
+          <button
+            type="button"
+            onClick={handleAnalyzeText}
+            disabled={!hasText || isProcessing}
+            className={`flex items-center justify-center gap-2 rounded-xl px-5 py-3 text-white transition-all duration-300 ${
+              !hasText || isProcessing
+                ? "bg-[#c4c0b9] cursor-not-allowed"
+                : "bg-[#6b8273] hover:bg-[#5a6d5e] hover:shadow-lg"
+            }`}
+          >
+            {isProcessing ? (
+              <>
+                <Loader2 className="w-4 h-4 animate-spin" />
+                Analyzing...
+              </>
+            ) : (
+              <>
+                <Sparkles className="w-4 h-4" />
+                Analyze Text with AI
+              </>
+            )}
+          </button>
+          <p className="text-[#7a8a7e] text-sm">
+            We reuse your latest resume analysis whenever you score new jobs.
+          </p>
+        </div>
+
+        {error && (
+          <div className="flex items-center gap-2 rounded-xl border border-[#d97b66] bg-[#fef4f2] px-4 py-3 text-sm text-[#7a4432]">
+            <AlertCircle className="w-4 h-4" />
+            <span>{error}</span>
+          </div>
+        )}
       </div>
 
-      {/* AI Analysis Preview */}
-      {resumeText && (
+      {/* AI Analysis */}
+      {analysis && (
         <div className="bg-gradient-to-br from-[#6b8273] to-[#5a6d5e] rounded-2xl p-8 text-white shadow-xl animate-slide-up">
-          <div className="flex items-center gap-3 mb-4">
-            <Sparkles className="w-6 h-6" />
-            <h3 className="text-white">AI Analysis</h3>
+          <div className="flex items-center justify-between gap-3 mb-6">
+            <div className="flex items-center gap-3">
+              <Sparkles className="w-6 h-6" />
+              <h3 className="text-white">AI Resume Insights</h3>
+            </div>
+            <div className="text-4xl font-semibold">
+              {Math.round(analysis.score)}
+              <span className="text-base font-normal">%</span>
+            </div>
           </div>
-          <div className="space-y-4">
+
+          <div className="grid gap-6 md:grid-cols-3">
+            <div className="md:col-span-3 space-y-2">
+              <div className="text-white/70 text-sm">Summary</div>
+              <p className="text-white leading-relaxed">{analysis.summary}</p>
+            </div>
             <div>
-              <div className="text-white/80 mb-1">Skills Detected</div>
-              <div className="flex flex-wrap gap-2">
-                {['JavaScript', 'TypeScript', 'React', 'Node.js', 'Python', 'AWS'].map((skill) => (
-                  <span
-                    key={skill}
-                    className="px-3 py-1 rounded-full bg-white/20 text-white backdrop-blur-sm"
-                  >
-                    {skill}
-                  </span>
+              <div className="text-white/70 text-sm mb-2">Strengths</div>
+              <ul className="space-y-2 text-white/90">
+                {toList(analysis.strengths).map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white/70" />
+                    <span>{item}</span>
+                  </li>
                 ))}
-              </div>
+              </ul>
             </div>
             <div>
-              <div className="text-white/80 mb-1">Experience Level</div>
-              <div className="text-white">Senior (5+ years)</div>
-            </div>
-            <div>
-              <div className="text-white/80 mb-1">Key Strengths</div>
-              <ul className="list-disc list-inside text-white space-y-1">
-                <li>Frontend Development with React</li>
-                <li>Team Leadership</li>
-                <li>Full-Stack Capabilities</li>
+              <div className="text-white/70 text-sm mb-2">Weaknesses</div>
+              <ul className="space-y-2 text-white/90">
+                {toList(analysis.weaknesses).map((item) => (
+                  <li key={item} className="flex items-start gap-2">
+                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white/70" />
+                    <span>{item}</span>
+                  </li>
+                ))}
               </ul>
             </div>
           </div>
@@ -194,7 +232,10 @@ University of Technology (2016-2020)`;
       )}
 
       {/* How It Works */}
-      <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-[#d4d1c8] animate-slide-up" style={{ animationDelay: '0.2s' }}>
+      <div
+        className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-[#d4d1c8] animate-slide-up"
+        style={{ animationDelay: "0.2s" }}
+      >
         <h3 className="text-[#3d5a4f] mb-6">How AI Matching Works</h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <div className="space-y-2">
@@ -203,25 +244,25 @@ University of Technology (2016-2020)`;
             </div>
             <h4 className="text-[#3d5a4f]">1. Analyze Resume</h4>
             <p className="text-[#7a8a7e]">
-              We extract your skills, experience, and qualifications
+              We extract your skills, stacks, and accomplishments from uploads or pasted text.
             </p>
           </div>
           <div className="space-y-2">
             <div className="w-12 h-12 rounded-xl bg-[#8a9a8f]/10 flex items-center justify-center mb-3">
               <Sparkles className="w-6 h-6 text-[#8a9a8f]" />
             </div>
-            <h4 className="text-[#3d5a4f]">2. Match Jobs</h4>
+            <h4 className="text-[#3d5a4f]">2. Compare With Jobs</h4>
             <p className="text-[#7a8a7e]">
-              AI compares your profile with job requirements
+              AI compares your resume highlights with each job description you save.
             </p>
           </div>
           <div className="space-y-2">
             <div className="w-12 h-12 rounded-xl bg-[#c5a987]/10 flex items-center justify-center mb-3">
               <Check className="w-6 h-6 text-[#c5a987]" />
             </div>
-            <h4 className="text-[#3d5a4f]">3. Get Insights</h4>
+            <h4 className="text-[#3d5a4f]">3. Get Targeted Insights</h4>
             <p className="text-[#7a8a7e]">
-              Receive match scores and personalized recommendations
+              Receive match scores and suggestions to fine-tune each application.
             </p>
           </div>
         </div>
@@ -229,4 +270,28 @@ University of Technology (2016-2020)`;
     </div>
   );
 }
+
 export default ResumeUpload;
+
+const SUPPORTED_TYPES = [
+  "application/pdf",
+  "text/plain",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+];
+
+function isSupportedFile(file: File) {
+  return (
+    SUPPORTED_TYPES.includes(file.type) ||
+    /\.pdf$/i.test(file.name) ||
+    /\.docx$/i.test(file.name) ||
+    /\.txt$/i.test(file.name)
+  );
+}
+
+function toList(text?: string | null) {
+  if (!text) return [];
+  return text
+    .split(/[\n•]/)
+    .map((item) => item.replace(/^[\s•-]+/, "").trim())
+    .filter(Boolean);
+}

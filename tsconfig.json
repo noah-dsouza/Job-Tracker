@@ -10,5 +10,11 @@
     "rootDir": "."
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "frontend", "frontend/**/*"]
+  "exclude": [
+    "node_modules",
+    "frontend",
+    "frontend/**/*",
+    "frontend-standalone",
+    "frontend-standalone/**/*"
+  ]
 }

@@ -4,6 +4,9 @@ import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
 
+import { getMatchScore } from "./aiController";
+import { upload as resumeUpload, evaluateResume } from "./resumeController";
+
 const app = express();
 
 // Allow frontend on localhost:3000 to talk to backend on 2000
@@ -14,7 +17,8 @@ app.use(
   })
 );
 
-app.use(express.json());
+app.use(express.json({ limit: "2mb" }));
+app.use(express.urlencoded({ extended: true, limit: "2mb" }));
 
 type User = {
   id: string;
@@ -46,10 +50,12 @@ type JobRecord = {
   userId: string;
   company: string;
   position: string;
+  description?: string;
   status: JobStatus;
   dateApplied: string;
   notes?: string;
   matchScore?: number;
+  matchReason?: string;
   createdAt: string;
   updatedAt: string;
   stageHistory: JobStatus[];
@@ -155,6 +161,8 @@ function loadJobs() {
       return {
         ...job,
         status: safeStatus,
+        description: job.description || "",
+        matchReason: job.matchReason,
         stageHistory: buildStageHistory(safeStatus, job.stageHistory),
       };
     });
@@ -291,7 +299,16 @@ app.get("/jobs", requireUser, (req, res) => {
 
 app.post("/jobs", requireUser, (req, res) => {
   const userId = (req as AuthedRequest).userId;
-  const { company, position, status, dateApplied, notes, matchScore } = req.body || {};
+  const {
+    company,
+    position,
+    status,
+    dateApplied,
+    notes,
+    matchScore,
+    description,
+    matchReason,
+  } = req.body || {};
 
   if (!company || !position || !status) {
     return res
@@ -310,6 +327,8 @@ app.post("/jobs", requireUser, (req, res) => {
     dateApplied: dateApplied || now.split("T")[0],
     notes,
     matchScore,
+    description,
+    matchReason,
     createdAt: now,
     updatedAt: now,
     stageHistory: buildStageHistory(normalizedStatus),
@@ -372,5 +391,14 @@ app.delete("/jobs/:id", requireUser, (req, res) => {
 
   res.json({ success: true });
 });
+
+app.post("/ai/match", requireUser, getMatchScore);
+
+app.post(
+  "/resume",
+  requireUser,
+  resumeUpload.single("file"),
+  evaluateResume
+);
 
 export default app;

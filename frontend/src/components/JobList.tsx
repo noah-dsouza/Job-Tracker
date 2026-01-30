@@ -12,9 +12,13 @@ export function JobList({ jobs, onEdit, onDelete }: JobListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
 
+  const normalizedSearch = searchTerm.toLowerCase();
+
   const filteredJobs = jobs.filter(job => {
-    const matchesSearch = job.company.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                          job.position.toLowerCase().includes(searchTerm.toLowerCase());
+    const matchesSearch =
+      job.company.toLowerCase().includes(normalizedSearch) ||
+      job.position.toLowerCase().includes(normalizedSearch) ||
+      (job.description || "").toLowerCase().includes(normalizedSearch);
     const matchesFilter = filterStatus === 'all' || job.status === filterStatus;
     return matchesSearch && matchesFilter;
   });
@@ -93,15 +97,29 @@ export function JobList({ jobs, onEdit, onDelete }: JobListProps) {
                     {getStatusLabel(job.status)}
                   </span>
                   <span className="text-[#7a8a7e]">Applied: {job.dateApplied}</span>
-                  {job.matchScore && (
+                  {typeof job.matchScore === "number" && (
                     <span className="px-3 py-1 rounded-full bg-[#f5f3ed] text-[#6b8273]">
                       Match: {job.matchScore}%
                     </span>
                   )}
                 </div>
 
+                {job.description && (
+                  <p className="mt-3 text-[#5a6d5e] text-sm">
+                    {job.description.length > 220
+                      ? `${job.description.slice(0, 220)}…`
+                      : job.description}
+                  </p>
+                )}
+
+                {job.matchReason && (
+                  <p className="mt-3 text-[#6b8273] text-sm">
+                    AI insight: {job.matchReason}
+                  </p>
+                )}
+
                 {job.notes && (
-                  <p className="mt-3 text-[#7a8a7e] text-sm">{job.notes}</p>
+                  <p className="mt-2 text-[#7a8a7e] text-sm">{job.notes}</p>
                 )}
               </div>
             </div>

@@ -2,6 +2,7 @@ import multer from "multer";
 import Groq from "groq-sdk";
 import dotenv from "dotenv";
 import pdfParse from "pdf-parse-fixed";
+import mammoth from "mammoth";
 
 dotenv.config();
 
@@ -12,13 +13,31 @@ const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export const evaluateResume = async (req, res) => {
   try {
-    if (!req.file) {
-      return res.status(400).json({ error: "No resume uploaded" });
+    let resumeText = "";
+
+    if (req.file) {
+      const mime = req.file.mimetype;
+      const name = req.file.originalname?.toLowerCase() || "";
+
+      if (mime === "application/pdf") {
+        const pdfData = await pdfParse(req.file.buffer);
+        resumeText = pdfData.text.trim();
+      } else if (
+        mime === "application/vnd.openxmlformats-officedocument.wordprocessingml.document" ||
+        name.endsWith(".docx")
+      ) {
+        const docx = await mammoth.extractRawText({ buffer: req.file.buffer });
+        resumeText = (docx.value || "").trim();
+      } else {
+        resumeText = req.file.buffer.toString("utf8").trim();
+      }
+    } else if (req.body?.text) {
+      resumeText = String(req.body.text).trim();
     }
 
-    // Convert PDF to text
-    const pdfData = await pdfParse(req.file.buffer);
-    const resumeText = pdfData.text.trim();
+    if (!resumeText) {
+      return res.status(400).json({ error: "No resume content received" });
+    }
 
     // Ask AI to evaluate resume
     const response = await client.chat.completions.create({

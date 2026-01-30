@@ -6,7 +6,11 @@ import Groq from "groq-sdk";
 const client = new Groq({ apiKey: process.env.GROQ_API_KEY });
 
 export const getMatchScore = async (req, res) => {
-  const { company, role, description } = req.body;
+  const { company, role, description, resumeText } = req.body || {};
+
+  if (!company || !role) {
+    return res.status(400).json({ error: "Company and role are required" });
+  }
 
   try {
     const response = await client.chat.completions.create({
@@ -15,13 +19,17 @@ export const getMatchScore = async (req, res) => {
         {
           role: "user",
           content: `
-Score this job for how good of a match it is for a young software engineer.
-Return ONLY a JSON object with "score" (1-100) and "reason".
-Do NOT add extra explanation or comments outside the JSON.
+You are an assistant that compares a candidate's resume with a job posting.
+Return ONLY valid JSON with numeric "score" (0-100) and short "reason".
 
 Company: ${company}
 Role: ${role}
-Description: ${description}
+
+Job Description:
+${description || "Not provided."}
+
+Candidate Resume:
+${resumeText || "Not provided."}
           `,
         },
       ],
@@ -59,7 +67,13 @@ Description: ${description}
       });
     }
 
-    return res.json(aiData);
+    const score = Math.max(
+      0,
+      Math.min(100, Number(aiData.score ?? aiData.match ?? 0))
+    );
+    const reason = typeof aiData.reason === "string" ? aiData.reason : "AI match reason unavailable.";
+
+    return res.json({ score, reason });
 
   } catch (error) {
     console.log(error);
