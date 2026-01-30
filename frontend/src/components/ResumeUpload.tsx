@@ -201,17 +201,17 @@ export function ResumeUpload({
             </div>
             <div>
               <div className="text-white/70 text-sm mb-2">Strengths</div>
-              <ul className="list-disc list-inside space-y-1 text-white/90">
+              <ul className="list-disc list-outside space-y-2 text-white/90 pl-5">
                 {toList(analysis.strengths).map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item} className="leading-snug">{item}</li>
                 ))}
               </ul>
             </div>
             <div>
               <div className="text-white/70 text-sm mb-2">Weaknesses</div>
-              <ul className="list-disc list-inside space-y-1 text-white/90">
+              <ul className="list-disc list-outside space-y-2 text-white/90 pl-5">
                 {toList(analysis.weaknesses).map((item) => (
-                  <li key={item}>{item}</li>
+                  <li key={item} className="leading-snug">{item}</li>
                 ))}
               </ul>
             </div>

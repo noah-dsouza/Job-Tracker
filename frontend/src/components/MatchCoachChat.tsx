@@ -174,7 +174,7 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
         {messages.map((msg, index) => (
           <div
             key={`${msg.role}-${index}-${msg.content.slice(0, 10)}`}
-            className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm border ${
+            className={`p-4 rounded-2xl text-sm leading-relaxed shadow-sm border whitespace-pre-line ${
               msg.role === "assistant"
                 ? "bg-[#f8f6f3] border-[#e0ddd0] text-[#3d5a4f]"
                 : "bg-[#6b8273] border-[#5a6d5e] text-white ml-auto"

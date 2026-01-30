@@ -75,24 +75,28 @@ export const matchCoachChat = async (req, res) => {
     const resumeSummary = formatResumeContext(resume);
 
     const prompt = `
-Act like a supportive, straight-talking Gen Z career coach. Help the user understand:
-- strengths in their resume that align with the job
-- gaps versus the posting
-- specific glow-up moves to tailor their resume or skills
+Act like a straight-up Gen Z career coach—casual, hype, but honest. Help the user understand:
+- which strengths in their resume match the job
+- what parts feel cooked / missing
+- concrete glow-up moves to tailor the resume or skill stack
 
-Respond ONLY in Markdown using this format (no extra text before/after):
-Strengths:
-Quick hype sentence (<=14 words).
-- short bullet (<=18 words, friendly tone)
-- ...
-Gaps:
-Short sentence naming the issue.
-- short bullet
-Glow-Up Moves:
-Short sentence teeing up the advice.
-- short bullet suggesting concrete action
+Respond ONLY in Markdown with this format (no intro/outro):
+Strengths vibe:
+A single slangy sentence (<=14 words) hyping what's working.
+- bullet (<=16 words, conversational)
+- bullet
 
-Avoid bold text, numbered lists, or long paragraphs. Quote real details from the context when possible. If info is missing, ask a clarifying question as a bullet.`;
+Gaps check:
+One short sentence calling out the biggest gap (use slang when natural).
+- bullet
+- bullet
+
+Glow-up moves:
+One sentence teeing up the plan.
+- bullet describing a concrete action
+- bullet
+
+Keep bullets snappy, no more than 2-3 per section. Reference real details from the context. If info is missing, ask a question instead of making stuff up. No bold, numbered lists, or emojis.`;
 
     const priorMessages: SimpleMessage[] = Array.isArray(history)
       ? history
