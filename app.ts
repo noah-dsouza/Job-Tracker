@@ -4,7 +4,7 @@ import fs from "fs";
 import path from "path";
 import bcrypt from "bcryptjs";
 
-import { getMatchScore } from "./aiController";
+import { getMatchScore, matchCoachChat } from "./aiController";
 import { upload as resumeUpload, evaluateResume } from "./resumeController";
 
 const app = express();
@@ -400,5 +400,7 @@ app.post(
   resumeUpload.single("file"),
   evaluateResume
 );
+
+app.post("/ai/chat", requireUser, matchCoachChat);
 
 export default app;

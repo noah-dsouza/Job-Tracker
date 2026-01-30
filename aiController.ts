@@ -14,7 +14,8 @@ export const getMatchScore = async (req, res) => {
 
   try {
     const response = await client.chat.completions.create({
-      model: "llama-3.1-8b-instant",
+      model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "user",
@@ -33,48 +34,19 @@ ${resumeText || "Not provided."}
           `,
         },
       ],
-      temperature: 0.2,
+      temperature: 0.15,
     });
 
-    let text = response.choices[0].message.content?.trim();
+    const raw = response.choices[0].message.content?.trim() || "{}";
+    const aiData = JSON.parse(raw);
 
-    text = text.replace(/```json/gi, "")
-               .replace(/```/g, "")
-               .trim();
-
-    // Extract ONLY the JSON block between the first { and last }
-    const firstBrace = text.indexOf("{");
-    const lastBrace = text.lastIndexOf("}");
-
-    if (firstBrace === -1 || lastBrace === -1) {
-      return res.status(500).json({
-        error: "No JSON object found in AI response",
-        raw: text
-      });
-    }
-
-    const jsonString = text.slice(firstBrace, lastBrace + 1);
-
-    let aiData;
-    try {
-      aiData = JSON.parse(jsonString);
-    } catch (err) {
-      return res.status(500).json({
-        error: "AI JSON failed to parse",
-        raw: text,
-        extracted: jsonString,
-        parseError: String(err)
-      });
-    }
-
-    const score = Math.max(
-      0,
-      Math.min(100, Number(aiData.score ?? aiData.match ?? 0))
-    );
-    const reason = typeof aiData.reason === "string" ? aiData.reason : "AI match reason unavailable.";
+    const score = clampScore(aiData.score ?? aiData.match ?? 0);
+    const reason =
+      typeof aiData.reason === "string"
+        ? aiData.reason.trim()
+        : "AI match reason unavailable.";
 
     return res.json({ score, reason });
-
   } catch (error) {
     console.log(error);
     res.status(500).json({
@@ -83,3 +55,104 @@ ${resumeText || "Not provided."}
     });
   }
 };
+
+type SimpleMessage = { role: "assistant" | "user"; content: string };
+
+export const matchCoachChat = async (req, res) => {
+  const {
+    message,
+    history = [],
+    job = {},
+    resume = {},
+  } = req.body || {};
+
+  if (!message || typeof message !== "string") {
+    return res.status(400).json({ error: "Message is required" });
+  }
+
+  try {
+    const jobSummary = formatJobContext(job);
+    const resumeSummary = formatResumeContext(resume);
+
+    const prompt = `
+Act as an encouraging career coach. The goal is to help the user understand:
+- Which strengths in their resume align with this job
+- Where gaps exist vs. the job requirements
+- Specific resume tweaks or skill-building ideas to improve their chances
+
+Keep answers concise, structured with short paragraphs or bullet lists.
+Always cite concrete details from the provided context.
+If information is missing, ask follow-up questions instead of inventing details.
+`;
+
+    const priorMessages: SimpleMessage[] = Array.isArray(history)
+      ? history
+          .filter(
+            (m) =>
+              m &&
+              typeof m.role === "string" &&
+              typeof m.content === "string"
+          )
+          .map((m) => ({
+            role: m.role === "assistant" ? "assistant" : "user",
+            content: m.content,
+          }))
+      : [];
+
+    const response = await client.chat.completions.create({
+      model: "llama-3.3-70b-versatile",
+      messages: [
+        { role: "system", content: prompt },
+        {
+          role: "user",
+          content: `${jobSummary}\n\n${resumeSummary}`,
+        },
+        ...priorMessages.map((msg) => ({
+          role: msg.role,
+          content: msg.content,
+        })),
+        { role: "user", content: message },
+      ],
+      temperature: 0.4,
+    });
+
+    const reply = response.choices[0].message.content?.trim();
+
+    if (!reply) {
+      return res.status(500).json({ error: "AI returned an empty response" });
+    }
+
+    return res.json({ reply });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "AI coach failed", details: String(error) });
+  }
+};
+
+function clampScore(value: any): number {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) return 0;
+  const scaled = numeric <= 1 ? numeric * 100 : numeric;
+  return Math.max(0, Math.min(100, Math.round(scaled)));
+}
+
+function formatJobContext(job: any): string {
+  if (!job || typeof job !== "object") return "No job description provided.";
+  return `Job Focus:\nCompany: ${job.company || "Unknown"}\nRole: ${
+    job.position || job.role || "Unknown"
+  }\nStatus: ${job.status || "unspecified"}\nMatch score: ${
+    typeof job.matchScore === "number" ? job.matchScore + "%" : "N/A"
+  }\nDescription:\n${job.description || "Not provided."}\nReasoning:\n${
+    job.matchReason || "No AI reasoning available yet."
+  }`;
+}
+
+function formatResumeContext(resume: any): string {
+  if (!resume || typeof resume !== "object") return "No resume data provided.";
+  const { summary, strengths, weaknesses, text } = resume;
+  return `Candidate Profile:\nSummary: ${
+    summary || "Not provided."
+  }\nStrengths: ${strengths || "Not listed."}\nWeaknesses: ${
+    weaknesses || "Not listed."
+  }\nResume Text:\n${text || "Not provided."}`;
+}

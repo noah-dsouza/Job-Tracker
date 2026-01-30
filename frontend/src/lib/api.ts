@@ -36,6 +36,11 @@ export interface MatchScoreResult {
   reason: string;
 }
 
+export interface CoachChatMessage {
+  role: "user" | "assistant";
+  content: string;
+}
+
 // Auth Endpoints
 
 export async function login(email: string, password: string) {
@@ -101,6 +106,24 @@ export async function fetchMatchScore(
   payload: { company: string; role: string; description?: string; resumeText?: string }
 ): Promise<MatchScoreResult> {
   const result = await request("/ai/match", "POST", token, payload);
+
+  if (result?.error) {
+    throw new Error(result.error);
+  }
+
+  return result;
+}
+
+export async function sendCoachChat(
+  token: string,
+  payload: {
+    message: string;
+    job: any;
+    resume: any;
+    history: CoachChatMessage[];
+  }
+): Promise<{ reply: string }> {
+  const result = await request("/ai/chat", "POST", token, payload);
 
   if (result?.error) {
     throw new Error(result.error);

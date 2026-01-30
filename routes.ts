@@ -11,7 +11,7 @@ import {
   deleteJob,
 } from "./jobsController";
 
-import { getMatchScore } from "./aiController";
+import { getMatchScore, matchCoachChat } from "./aiController";
 import { upload, evaluateResume } from "./resumeController";
 
 const router = express.Router();
@@ -26,6 +26,7 @@ router.patch("/jobs/:id", authRequired, updateJob);
 router.delete("/jobs/:id", authRequired, deleteJob);
 
 router.post("/ai/match", authRequired, getMatchScore);
+router.post("/ai/chat", authRequired, matchCoachChat);
 
 router.post("/resume", authRequired, upload.single("file"), evaluateResume);
 

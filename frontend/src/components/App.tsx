@@ -7,6 +7,7 @@ import Dashboard from "@/components/Dashboard";
 import JobList from "@/components/JobList";
 import AddJobModal from "@/components/AddJobModal";
 import AIMatchScore from "@/components/AIMatchScore";
+import MatchCoachChat from "@/components/MatchCoachChat";
 import ResumeUpload from "@/components/ResumeUpload";
 import Logo from "@/components/Logo";
 
@@ -296,7 +297,16 @@ export default function App() {
         {currentView === "jobs" && (
           <JobList jobs={jobs} onEdit={openEditModal} onDelete={handleDeleteJob} />
         )}
-        {currentView === "ai-match" && <AIMatchScore jobs={jobs} />}
+        {currentView === "ai-match" && (
+          <div className="space-y-6">
+            <AIMatchScore jobs={jobs} />
+            <MatchCoachChat
+              jobs={jobs}
+              resumeText={resumeText}
+              resumeAnalysis={resumeAnalysis}
+            />
+          </div>
+        )}
         {currentView === "resume" && (
           <ResumeUpload
             resumeText={resumeText}

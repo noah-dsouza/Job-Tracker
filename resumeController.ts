@@ -42,6 +42,7 @@ export const evaluateResume = async (req, res) => {
     // Ask AI to evaluate resume
     const response = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
+      response_format: { type: "json_object" },
       messages: [
         {
           role: "user",
@@ -65,14 +66,10 @@ Return:
       temperature: 0.2,
     });
 
-    let raw = response.choices[0].message.content.trim();
+    const raw = response.choices[0].message.content?.trim() || "{}";
+    const analysis = JSON.parse(raw);
 
-    raw = raw.replace(/```json/gi, "").replace(/```/g, "").trim();
-
-    const first = raw.indexOf("{");
-    const last = raw.lastIndexOf("}");
-    const jsonString = raw.slice(first, last + 1);
-    const analysis = JSON.parse(jsonString);
+    analysis.score = normalizeScore(analysis.score);
 
     res.json({ resumeText, analysis });
   } catch (err) {
@@ -83,3 +80,10 @@ Return:
     });
   }
 };
+
+function normalizeScore(score: any): number {
+  const numeric = Number(score);
+  if (!Number.isFinite(numeric)) return 0;
+  const scaled = numeric <= 1 ? numeric * 100 : numeric;
+  return Math.max(0, Math.min(100, Math.round(scaled)));
+}

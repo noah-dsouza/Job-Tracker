@@ -189,16 +189,25 @@ export function ResumeUpload({
       {/* AI Analysis */}
       {analysis && (
         <div className="bg-gradient-to-br from-[#6b8273] to-[#5a6d5e] rounded-2xl p-8 text-white shadow-xl animate-slide-up">
-          <div className="flex items-center justify-between gap-3 mb-6">
+          <div className="flex items-start justify-between gap-3 mb-4">
             <div className="flex items-center gap-3">
               <Sparkles className="w-6 h-6" />
               <h3 className="text-white">AI Resume Insights</h3>
             </div>
-            <div className="text-4xl font-semibold">
-              {Math.round(analysis.score)}
-              <span className="text-base font-normal">%</span>
+            <div className="text-right">
+              <div className="text-xs uppercase tracking-wide text-white/70">
+                Resume Strength
+              </div>
+              <div className="text-4xl font-semibold">
+                {Math.round(analysis.score)}
+                <span className="text-base font-normal">%</span>
+              </div>
             </div>
           </div>
+          <p className="text-white/80 text-sm mb-6">
+            This score estimates how complete your resume looks for typical software roles.
+            Use it as a quick gut-check, not a definitive rating.
+          </p>
 
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-3 space-y-2">
