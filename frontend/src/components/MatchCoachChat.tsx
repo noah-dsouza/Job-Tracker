@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Sparkles, Send, Loader2, AlertCircle, MessageSquare } from "lucide-react";
 
 import type { Job } from "@/components/App";
@@ -23,6 +23,7 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
   const [input, setInput] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const messagesEndRef = useRef<HTMLDivElement | null>(null);
 
   const currentJob = useMemo(() => {
     if (!jobs.length) return null;
@@ -110,6 +111,10 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
     handleSend();
   };
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages, isLoading]);
+
   if (!jobs.length) {
     return (
       <div className="bg-white/80 backdrop-blur-sm rounded-2xl p-8 border border-[#d4d1c8] animate-fade-in">
@@ -178,6 +183,7 @@ export default function MatchCoachChat({ jobs, resumeText, resumeAnalysis }: Mat
             <Loader2 className="w-4 h-4 animate-spin" /> Coach is thinking...
           </div>
         )}
+        <div ref={messagesEndRef} />
       </div>
 
       {error && (

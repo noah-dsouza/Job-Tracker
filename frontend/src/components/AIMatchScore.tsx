@@ -165,45 +165,6 @@ export function AIMatchScore({ jobs }: AIMatchScoreProps) {
         )}
       </div>
 
-      {/* AI Recommendations */}
-      <div className="bg-gradient-to-br from-[#f8f6f3] to-[#eae8df] rounded-2xl p-8 border border-[#d4d1c8] animate-slide-up" style={{ animationDelay: '0.5s' }}>
-        <h3 className="text-[#3d5a4f] mb-4">AI Recommendations</h3>
-        <div className="space-y-3">
-          <div className="flex items-start gap-3 text-[#5a6d5e]">
-            <div className="w-8 h-8 rounded-lg bg-[#c5a987]/20 flex items-center justify-center flex-shrink-0">
-              <Target className="w-4 h-4 text-[#c5a987]" />
-            </div>
-            <div>
-              <div className="mb-1">Focus on high-match applications</div>
-              <div className="text-[#7a8a7e] text-sm">
-                Applications with 80%+ match have higher success rates
-              </div>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 text-[#5a6d5e]">
-            <div className="w-8 h-8 rounded-lg bg-[#8a9a8f]/20 flex items-center justify-center flex-shrink-0">
-              <TrendingUp className="w-4 h-4 text-[#8a9a8f]" />
-            </div>
-            <div>
-              <div className="mb-1">Tailor your applications</div>
-              <div className="text-[#7a8a7e] text-sm">
-                Customize your resume and cover letter for better matches
-              </div>
-            </div>
-          </div>
-          <div className="flex items-start gap-3 text-[#5a6d5e]">
-            <div className="w-8 h-8 rounded-lg bg-[#6b8273]/20 flex items-center justify-center flex-shrink-0">
-              <Sparkles className="w-4 h-4 text-[#6b8273]" />
-            </div>
-            <div>
-              <div className="mb-1">Follow up strategically</div>
-              <div className="text-[#7a8a7e] text-sm">
-                Prioritize following up on applications with high match scores
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
     </div>
   );
 }

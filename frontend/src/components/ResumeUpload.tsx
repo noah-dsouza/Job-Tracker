@@ -189,25 +189,10 @@ export function ResumeUpload({
       {/* AI Analysis */}
       {analysis && (
         <div className="bg-gradient-to-br from-[#6b8273] to-[#5a6d5e] rounded-2xl p-8 text-white shadow-xl animate-slide-up">
-          <div className="flex items-start justify-between gap-3 mb-4">
-            <div className="flex items-center gap-3">
-              <Sparkles className="w-6 h-6" />
-              <h3 className="text-white">AI Resume Insights</h3>
-            </div>
-            <div className="text-right">
-              <div className="text-xs uppercase tracking-wide text-white/70">
-                Resume Strength
-              </div>
-              <div className="text-4xl font-semibold">
-                {Math.round(analysis.score)}
-                <span className="text-base font-normal">%</span>
-              </div>
-            </div>
+          <div className="flex items-center gap-3 mb-4">
+            <Sparkles className="w-6 h-6" />
+            <h3 className="text-white">AI Resume Insights</h3>
           </div>
-          <p className="text-white/80 text-sm mb-6">
-            This score estimates how complete your resume looks for typical software roles.
-            Use it as a quick gut-check, not a definitive rating.
-          </p>
 
           <div className="grid gap-6 md:grid-cols-3">
             <div className="md:col-span-3 space-y-2">
@@ -216,23 +201,17 @@ export function ResumeUpload({
             </div>
             <div>
               <div className="text-white/70 text-sm mb-2">Strengths</div>
-              <ul className="space-y-2 text-white/90">
+              <ul className="list-disc list-inside space-y-1 text-white/90">
                 {toList(analysis.strengths).map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white/70" />
-                    <span>{item}</span>
-                  </li>
+                  <li key={item}>{item}</li>
                 ))}
               </ul>
             </div>
             <div>
               <div className="text-white/70 text-sm mb-2">Weaknesses</div>
-              <ul className="space-y-2 text-white/90">
+              <ul className="list-disc list-inside space-y-1 text-white/90">
                 {toList(analysis.weaknesses).map((item) => (
-                  <li key={item} className="flex items-start gap-2">
-                    <span className="mt-1 h-1.5 w-1.5 rounded-full bg-white/70" />
-                    <span>{item}</span>
-                  </li>
+                  <li key={item}>{item}</li>
                 ))}
               </ul>
             </div>

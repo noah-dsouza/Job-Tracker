@@ -8,6 +8,7 @@ import JobList from "@/components/JobList";
 import AddJobModal from "@/components/AddJobModal";
 import AIMatchScore from "@/components/AIMatchScore";
 import MatchCoachChat from "@/components/MatchCoachChat";
+import AIRecommendations from "@/components/AIRecommendations";
 import ResumeUpload from "@/components/ResumeUpload";
 import Logo from "@/components/Logo";
 
@@ -305,6 +306,7 @@ export default function App() {
               resumeText={resumeText}
               resumeAnalysis={resumeAnalysis}
             />
+            <AIRecommendations />
           </div>
         )}
         {currentView === "resume" && (

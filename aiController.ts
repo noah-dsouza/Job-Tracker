@@ -75,15 +75,21 @@ export const matchCoachChat = async (req, res) => {
     const resumeSummary = formatResumeContext(resume);
 
     const prompt = `
-Act as an encouraging career coach. The goal is to help the user understand:
-- Which strengths in their resume align with this job
-- Where gaps exist vs. the job requirements
-- Specific resume tweaks or skill-building ideas to improve their chances
+Act as an encouraging career coach. Help the user understand:
+- strengths in their resume that align with the job
+- gaps relative to the requirements
+- concrete next actions to tailor their resume or skill set
 
-Keep answers concise, structured with short paragraphs or bullet lists.
-Always cite concrete details from the provided context.
-If information is missing, ask follow-up questions instead of inventing details.
-`;
+Respond ONLY in Markdown, with this exact structure:
+Strengths:
+- bullet (max 18 words)
+- ...
+Gaps:
+- bullet
+Next Steps:
+- bullet
+
+No bold text, no numbered lists, no intro/outro sentences. If information is missing, ask a follow-up question in a bullet.`;
 
     const priorMessages: SimpleMessage[] = Array.isArray(history)
       ? history
