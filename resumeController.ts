@@ -53,12 +53,12 @@ Analyze this resume:
 
 ${resumeText}
 
-Return:
+Return an object like:
 {
   "score": number,
-  "strengths": string,
-  "weaknesses": string,
-  "summary": string
+  "summary": string,
+  "strengths": string[],
+  "weaknesses": string[]
 }
           `,
         },
@@ -70,6 +70,8 @@ Return:
     const analysis = JSON.parse(raw);
 
     analysis.score = normalizeScore(analysis.score);
+    analysis.strengths = normalizeList(analysis.strengths);
+    analysis.weaknesses = normalizeList(analysis.weaknesses);
 
     res.json({ resumeText, analysis });
   } catch (err) {
@@ -86,4 +88,24 @@ function normalizeScore(score: any): number {
   if (!Number.isFinite(numeric)) return 0;
   const scaled = numeric <= 1 ? numeric * 100 : numeric;
   return Math.max(0, Math.min(100, Math.round(scaled)));
+}
+
+function normalizeList(value: any): string[] {
+  if (Array.isArray(value)) {
+    return value
+      .map((item) => String(item || "").trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  }
+
+  if (typeof value === "string") {
+    return value
+      .replace(/•/g, "\n")
+      .split(/\n+/)
+      .map((item) => item.replace(/^[\s*-]+/, "").trim())
+      .filter(Boolean)
+      .slice(0, 6);
+  }
+
+  return [];
 }

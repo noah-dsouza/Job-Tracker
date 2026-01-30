@@ -276,9 +276,13 @@ function isSupportedFile(file: File) {
   );
 }
 
-function toList(text?: string | null) {
-  if (!text) return [];
-  const normalized = text
+function toList(value?: string | string[] | null) {
+  if (!value) return [];
+  if (Array.isArray(value)) {
+    return value.map((item) => item.trim()).filter(Boolean);
+  }
+
+  const normalized = value
     .replace(/•/g, "\n")
     .replace(/[-–]\s+/g, "\n")
     .replace(/([.!?])\s+(?=[A-Z0-9])/g, "$1\n");

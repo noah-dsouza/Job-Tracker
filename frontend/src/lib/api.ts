@@ -21,8 +21,8 @@ async function request(
 
 export interface ResumeAnalysis {
   score: number;
-  strengths: string;
-  weaknesses: string;
+  strengths: string[] | string;
+  weaknesses: string[] | string;
   summary: string;
 }
 
