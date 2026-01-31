@@ -22,6 +22,11 @@ Greenlit pairs a modern **Next.js App Router frontend** with a **lightweight Exp
 - Feed resumes and job notes into Groq-powered scoring  
 - Rank roles by relevance to prioritize outreach  
 
+### 💬 Match Coach Chatbot
+- Groq-backed coach that chats about any saved job  
+- Highlights resume strengths, gaps, and tailoring ideas  
+- Remembers all context per role  
+
 ### 📄 Resume Lab
 - Upload resume text  
 - Keep versioned notes per role  
@@ -49,22 +54,33 @@ Greenlit pairs a modern **Next.js App Router frontend** with a **lightweight Exp
 - PostgreSQL
 - Multer (resume uploads)
 - bcrypt + JWT authentication
-- Groq SDK (AI match scoring)
-- Mongo DB Atlast
+- Groq SDK (AI match scoring + chat)
+- MongoDB Atlas
 
 ---
 
 ## 🔧 Getting Started
 
-### Backend API
+### Backend API (Express + Prisma + Groq)
 ```bash
 cd Job-Tracker
 npm install
 npm run dev
 # http://localhost:2000
-### Frontend 
-cd frontend-standalone
+```
+
+### Frontend (Next.js App Router)
+```bash
+cd Job-Tracker/frontend
 npm install
 npm run dev
-# http://localhost:3000
+# http://localhost:3000  (proxies API calls to http://localhost:2000)
+```
 
+### LocalStorage Demo Frontend (optional, no backend)
+```bash
+cd Job-Tracker/frontend-standalone
+npm install
+npm run dev
+# http://localhost:3000  (stores data locally, no chatbot)
+```
