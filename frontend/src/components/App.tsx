@@ -120,11 +120,22 @@ export default function App() {
   const loadJobs = useCallback(async (token: string) => {
     try {
       const data = await getJobs(token);
-      if (!data.error) {
+
+      if (Array.isArray(data)) {
         setJobs(data);
+        return;
       }
+
+      if (Array.isArray((data as any)?.jobs)) {
+        setJobs((data as any).jobs);
+        return;
+      }
+
+      console.warn("Unexpected jobs payload", data);
+      setJobs([]);
     } catch (err) {
       console.error("Failed to load jobs", err);
+      setJobs([]);
     }
   }, []);
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState } from "react";
 
 import Login from "@/components/Login";
 import Dashboard from "@/components/Dashboard";
@@ -44,23 +44,25 @@ const NAV_VIEWS = ["dashboard", "jobs", "ai-match", "resume"] as const;
 type View = (typeof NAV_VIEWS)[number];
 
 export default function App() {
-  const [authToken, setAuthToken] = useState<string | null>(() => {
-    if (typeof window === "undefined") return null;
-    return window.localStorage.getItem("token");
-  });
+  const [authToken, setAuthToken] = useState<string | null>(null);
   const [currentView, setCurrentView] = useState<View>("dashboard");
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [editingJob, setEditingJob] = useState<Job | null>(null);
   const [resumeText, setResumeText] = useState("");
 
-  const [jobs, setJobs] = useState<Job[]>(() => {
-    if (typeof window === "undefined") return [];
-    const token = window.localStorage.getItem("token");
-    if (!token) return [];
-    return getJobsFromStorage(token);
-  });
+  const [jobs, setJobs] = useState<Job[]>([]);
   const isAuthenticated = Boolean(authToken);
+
+  useEffect(() => {
+    const token = window.localStorage.getItem("token");
+    if (!token) {
+      return;
+    }
+
+    setAuthToken(token);
+    setJobs(getJobsFromStorage(token));
+  }, []);
 
   const handleAddJob = async (job: Omit<Job, "id">) => {
     if (!authToken) return;
