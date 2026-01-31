@@ -1,11 +1,14 @@
+import { useState } from "react";
 import type { Job } from "@/components/App";
-import { Sparkles, TrendingUp, Target } from 'lucide-react';
+import { Sparkles, TrendingUp, Target, ChevronDown, ChevronUp } from 'lucide-react';
+import { chunkDescription, getDisplayLabel } from "@/lib/text";
 
 interface AIMatchScoreProps {
   jobs: Job[];
 }
 
 export function AIMatchScore({ jobs }: AIMatchScoreProps) {
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
   const scoredJobs = jobs.filter(
     (job): job is Job & { matchScore: number } =>
       typeof job.matchScore === "number"
@@ -101,6 +104,8 @@ export function AIMatchScore({ jobs }: AIMatchScoreProps) {
         <div className="space-y-4">
           {topMatches.map((job, index) => {
             const matchReason = getDisplayedReason(job);
+            const descriptionChunks = job.description ? chunkDescription(job.description) : [];
+            const isExpanded = Boolean(expandedDescriptions[job.id]);
             return (
               <div
                 key={job.id}
@@ -108,11 +113,39 @@ export function AIMatchScore({ jobs }: AIMatchScoreProps) {
                 style={{ animationDelay: `${0.5 + index * 0.1}s` }}
               >
                 <div className="flex-1">
-                  <div className="text-[#3d5a4f] mb-1">{job.position}</div>
-                  <div className="text-[#7a8a7e]">{job.company}</div>
+                  <div className="text-[#3d5a4f] mb-1">{getDisplayLabel(job.position)}</div>
+                  <div className="text-[#7a8a7e]">{getDisplayLabel(job.company, 80)}</div>
                   {matchReason && (
                     <div className="mt-2 text-[#7a8a7e] text-sm">
-                      {matchReason}
+                      {matchReason.length > 220 ? `${matchReason.slice(0, 220)}…` : matchReason}
+                    </div>
+                  )}
+                  {descriptionChunks.length > 0 && (
+                    <div className="mt-4 rounded-xl border border-[#e0ddd0] bg-white px-4 py-3">
+                      <button
+                        type="button"
+                        onClick={() =>
+                          setExpandedDescriptions((prev) => ({
+                            ...prev,
+                            [job.id]: !prev[job.id],
+                          }))
+                        }
+                        className="flex w-full items-center justify-between text-left text-sm font-medium text-[#5a6d5e]"
+                      >
+                        <span>{isExpanded ? "Hide job description" : "View job description"}</span>
+                        {isExpanded ? (
+                          <ChevronUp className="w-4 h-4 text-[#7a8a7e]" />
+                        ) : (
+                          <ChevronDown className="w-4 h-4 text-[#7a8a7e]" />
+                        )}
+                      </button>
+                      {isExpanded && (
+                        <div className="mt-3 space-y-2 text-sm leading-relaxed text-[#4b5c50] whitespace-pre-line">
+                          {descriptionChunks.map((chunk, chunkIndex) => (
+                            <p key={`${job.id}-match-desc-${chunkIndex}`}>{chunk}</p>
+                          ))}
+                        </div>
+                      )}
                     </div>
                   )}
                 </div>

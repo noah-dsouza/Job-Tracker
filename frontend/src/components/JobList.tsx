@@ -1,6 +1,7 @@
 import { useState } from 'react';
-import { Trash2, Edit, Search } from 'lucide-react';
+import { Trash2, Edit, Search, ChevronDown, ChevronUp } from 'lucide-react';
 import type { Job } from "@/components/App";
+import { chunkDescription, getDisplayLabel } from "@/lib/text";
 
 interface JobListProps {
   jobs: Job[];
@@ -11,6 +12,7 @@ interface JobListProps {
 export function JobList({ jobs, onEdit, onDelete }: JobListProps) {
   const [searchTerm, setSearchTerm] = useState('');
   const [filterStatus, setFilterStatus] = useState<string>('all');
+  const [expandedDescriptions, setExpandedDescriptions] = useState<Record<string, boolean>>({});
 
   const normalizedSearch = searchTerm.toLowerCase();
 
@@ -63,34 +65,37 @@ export function JobList({ jobs, onEdit, onDelete }: JobListProps) {
 
       {/* Jobs Grid */}
       <div className="grid grid-cols-1 gap-4">
-        {filteredJobs.map((job, index) => (
-          <div
-            key={job.id}
-            className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-[#d4d1c8] hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-slide-up group"
-            style={{ animationDelay: `${index * 0.05}s` }}
-          >
-            <div className="flex items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex items-start justify-between mb-3">
-                  <div>
-                    <h3 className="text-[#3d5a4f] mb-1">{job.position}</h3>
-                    <p className="text-[#7a8a7e]">{job.company}</p>
+        {filteredJobs.map((job, index) => {
+          const isExpanded = Boolean(expandedDescriptions[job.id]);
+          const descriptionChunks = job.description ? chunkDescription(job.description) : [];
+          return (
+            <div
+              key={job.id}
+              className="bg-white/80 backdrop-blur-sm rounded-2xl p-6 border border-[#d4d1c8] hover:shadow-lg transition-all duration-300 hover:-translate-y-1 animate-slide-up group"
+              style={{ animationDelay: `${index * 0.05}s` }}
+            >
+              <div className="flex items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex items-start justify-between mb-3">
+                    <div>
+                      <h3 className="text-[#3d5a4f] mb-1">{getDisplayLabel(job.position)}</h3>
+                      <p className="text-[#7a8a7e]">{getDisplayLabel(job.company, 80)}</p>
+                    </div>
+                    <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <button
+                        onClick={() => onEdit(job)}
+                        className="p-2 rounded-lg text-[#6b8273] hover:bg-[#eae8df] transition-all duration-300 hover:scale-110"
+                      >
+                        <Edit className="w-4 h-4" />
+                      </button>
+                      <button
+                        onClick={() => onDelete(job.id)}
+                        className="p-2 rounded-lg text-[#b39189] hover:bg-[#f5e8e4] transition-all duration-300 hover:scale-110"
+                      >
+                        <Trash2 className="w-4 h-4" />
+                      </button>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <button
-                      onClick={() => onEdit(job)}
-                      className="p-2 rounded-lg text-[#6b8273] hover:bg-[#eae8df] transition-all duration-300 hover:scale-110"
-                    >
-                      <Edit className="w-4 h-4" />
-                    </button>
-                    <button
-                      onClick={() => onDelete(job.id)}
-                      className="p-2 rounded-lg text-[#b39189] hover:bg-[#f5e8e4] transition-all duration-300 hover:scale-110"
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </button>
-                  </div>
-                </div>
 
                 <div className="flex flex-wrap items-center gap-3">
                   <span className={`px-3 py-1 rounded-full text-white transition-all duration-300 hover:shadow-lg hover:scale-105 ${getStatusColor(job.status)}`}>
@@ -104,12 +109,33 @@ export function JobList({ jobs, onEdit, onDelete }: JobListProps) {
                   )}
                 </div>
 
-                {job.description && (
-                  <p className="mt-3 text-[#5a6d5e] text-sm">
-                    {job.description.length > 220
-                      ? `${job.description.slice(0, 220)}…`
-                      : job.description}
-                  </p>
+                {descriptionChunks.length > 0 && (
+                  <div className="mt-4 rounded-xl border border-[#e0ddd0] bg-[#f5f3ed] px-4 py-3">
+                    <button
+                      type="button"
+                      onClick={() =>
+                        setExpandedDescriptions((prev) => ({
+                          ...prev,
+                          [job.id]: !prev[job.id],
+                        }))
+                      }
+                      className="flex w-full items-center justify-between text-left font-medium text-[#5a6d5e]"
+                    >
+                      <span>{isExpanded ? "Hide job description" : "View job description"}</span>
+                      {isExpanded ? (
+                        <ChevronUp className="w-4 h-4 text-[#7a8a7e]" />
+                      ) : (
+                        <ChevronDown className="w-4 h-4 text-[#7a8a7e]" />
+                      )}
+                    </button>
+                    {isExpanded && (
+                      <div className="mt-3 space-y-2 text-sm leading-relaxed text-[#4b5c50] whitespace-pre-line">
+                        {descriptionChunks.map((chunk, chunkIndex) => (
+                          <p key={`${job.id}-desc-${chunkIndex}`}>{chunk}</p>
+                        ))}
+                      </div>
+                    )}
+                  </div>
                 )}
 
                 {job.matchReason && (
@@ -122,9 +148,10 @@ export function JobList({ jobs, onEdit, onDelete }: JobListProps) {
                   <p className="mt-2 text-[#7a8a7e] text-sm">{job.notes}</p>
                 )}
               </div>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {filteredJobs.length === 0 && (
