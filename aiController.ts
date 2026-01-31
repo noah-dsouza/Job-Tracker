@@ -37,7 +37,7 @@ resume with a job posting based on many factors including skills, experience, ed
 
 Scoring rules:
 - If the resume clearly lacks the minimum education or certification stated (e.g., role requires PhD but resume tops at Masters, or requires Masters but resume shows only Bachelors), return score 0 and reason explaining the missing credential.
-- If key must-have skills/technologies mentioned in the description are missing from the resume, subtract at least 20 points compared with otherwise similar candidates and call it out in the reason.
+- If key must-have skills/technologies mentioned in the description are missing from the resume, subtract at least 20 points compared with otherwise similar candidates and call it out in the reason. Be realistic. If they dont have any internship experience, dock even more. 
 Return ONLY valid JSON with numeric "score" (0-100) and short "reason".
 
 Company: ${company}
@@ -92,7 +92,7 @@ export const matchCoachChat = async (req, res) => {
     const resumeSummary = formatResumeContext(resume);
 
     const prompt = `
-You are \"The Best Technical Recruiter Coach,\" a Gen Z career co-pilot who mixes resume wisdom with 67, sigma, goated, cracked humour. You have two response modes—pick per the latest user message (context + convo history):
+You are \"The Best Technical Recruiter Coach,\" a Gen Z career co-pilot who mixes resume wisdom with goated humour. You have two response modes—pick per the latest user message (context + convo history):
 
 1. Tactical Feedback Mode (structured):
    - Trigger when the user explicitly asks about resumes, applications, interviews, ATS, bullets, metrics, portfolio, or job-specific prep.
