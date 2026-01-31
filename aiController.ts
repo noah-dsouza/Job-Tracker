@@ -12,6 +12,17 @@ export const getMatchScore = async (req, res) => {
     return res.status(400).json({ error: "Company and role are required" });
   }
 
+  const educationBlocker = evaluateEducationRequirement(
+    `${role || ""}\n${description || ""}`,
+    resumeText || ""
+  );
+  if (educationBlocker) {
+    return res.json({
+      score: 0,
+      reason: educationBlocker,
+    });
+  }
+
   try {
     const response = await client.chat.completions.create({
       model: "llama-3.3-70b-versatile",
@@ -20,7 +31,10 @@ export const getMatchScore = async (req, res) => {
         {
           role: "user",
           content: `
-You are an assistant that compares a candidate's resume with a job posting.
+You are a skilled all knowing computer science technical recruiter that compares a candidate's 
+resume with a job posting based on many factors including skills, experience, education, and certifications. 
+
+
 Scoring rules:
 - If the resume clearly lacks the minimum education or certification stated (e.g., role requires PhD but resume tops at Masters, or requires Masters but resume shows only Bachelors), return score 0 and reason explaining the missing credential.
 - If key must-have skills/technologies mentioned in the description are missing from the resume, subtract at least 20 points compared with otherwise similar candidates and call it out in the reason.
@@ -78,36 +92,36 @@ export const matchCoachChat = async (req, res) => {
     const resumeSummary = formatResumeContext(resume);
 
     const prompt = `
-You are \"Spicy Coach,\" a Gen Z career co-pilot who mixes resume wisdom with peer-level banter. You have two response modes—pick per the latest user message (context + convo history):
+You are \"The Best Technical Recruiter Coach,\" a Gen Z career co-pilot who mixes resume wisdom with 67, sigma, goated, cracked humour. You have two response modes—pick per the latest user message (context + convo history):
 
 1. Tactical Feedback Mode (structured):
    - Trigger when the user explicitly asks about resumes, applications, interviews, ATS, bullets, metrics, portfolio, or job-specific prep.
    - Respond ONLY in this Markdown template (no intro/outro):
-Strengths vibe:
+Whats Working:
 A single slangy sentence (<=14 words) hyping what's working.
 - bullet (<=16 words, conversational)
 - bullet
 
-Gaps check:
-One short sentence calling out the biggest gap (use slang when natural). If info is missing, ask a specific question instead of inventing details.
+Where You Need Work:
+One short sentence calling out 1-2 of the biggest gaps such as experience (use goated gen z dank humour when natural). If info is missing, ask a specific question instead of inventing details.
 - bullet
 - bullet
 
-Glow-up moves:
+How to Boss Up:
 One sentence teeing up the plan.
 - bullet describing a concrete action (include metrics or KPIs when the user asked for them)
 - bullet
 
 2. Free-Chat Mode (unstructured):
    - Trigger when the latest user message is small talk, venting, jokes, or anything not asking for concrete job/resume help.
-   - Reply with 2-4 short sentences, casual slang, TikTok-level sarcasm. If the user hurls insults, drop ONE playful clapback line (\"Bro, not my fault you're still fun-employed.\") before continuing the convo. Still stay helpful if they pivot back to career talk.
+   - Reply with 2-4 short sentences, edgy humour, TikTok-level sarcasm. If the user hurls insults, drop ONE playful clapback line (\"Bro, not my fault you're still un-employed.\") before continuing the convo. Still stay helpful if they pivot back to career talk.
 
 Tone + safety rules for BOTH modes:
-- Be witty, keep vocabulary varied, never use slurs or harassment beyond mild clapbacks.
+- Be witty, keep vocabulary varied, you can use slurs or harassment in funny manner not agressive 
 - Reference real context from job/resume data when relevant.
 - When the user asks for metrics/quant goals in any mode, mention 2-3 measurable targets (e.g., \"Show a bullet proving you cut response time 35%\").
 - No emojis, numbered lists, or bold text.
-- Never refuse feedback with \"I'm just an AI\"; you're their spicy peer coach.`;
+- Never refuse feedback with \"I'm just an AI\"; you're their goated peer coach.`;
 
     const priorMessages: SimpleMessage[] = Array.isArray(history)
       ? history
@@ -158,6 +172,38 @@ function clampScore(value: any): number {
   if (!Number.isFinite(numeric)) return 0;
   const scaled = numeric <= 1 ? numeric * 100 : numeric;
   return Math.max(0, Math.min(100, Math.round(scaled)));
+}
+
+const DEGREE_KEYWORDS = {
+  phd: ["phd", "ph.d", "doctorate", "doctoral", "doctor of philosophy"],
+  masters: ["master", "m.s.", "ms ", "msc", "m.sc", "mba"],
+};
+
+function containsAny(text: string, keywords: string[]) {
+  const normalized = text.toLowerCase();
+  return keywords.some((keyword) => normalized.includes(keyword));
+}
+
+function evaluateEducationRequirement(jobText: string, resumeText: string): string | null {
+  const jobNormalized = jobText.toLowerCase();
+  const resumeNormalized = resumeText.toLowerCase();
+
+  const requiresPhd = containsAny(jobNormalized, DEGREE_KEYWORDS.phd);
+  const requiresMasters = containsAny(jobNormalized, DEGREE_KEYWORDS.masters);
+
+  const hasPhd = containsAny(resumeNormalized, DEGREE_KEYWORDS.phd);
+  const hasMastersOrHigher =
+    hasPhd || containsAny(resumeNormalized, DEGREE_KEYWORDS.masters);
+
+  if (requiresPhd && !hasPhd) {
+    return "Posting explicitly requires a PhD/doctorate but your resume doesn't list one.";
+  }
+
+  if (!requiresPhd && requiresMasters && !hasMastersOrHigher) {
+    return "Posting requires a master's degree but your resume only lists lower degrees.";
+  }
+
+  return null;
 }
 
 function formatJobContext(job: any): string {
