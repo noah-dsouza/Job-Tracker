@@ -21,6 +21,9 @@ export const getMatchScore = async (req, res) => {
           role: "user",
           content: `
 You are an assistant that compares a candidate's resume with a job posting.
+Scoring rules:
+- If the resume clearly lacks the minimum education or certification stated (e.g., role requires PhD but resume tops at Masters, or requires Masters but resume shows only Bachelors), return score 0 and reason explaining the missing credential.
+- If key must-have skills/technologies mentioned in the description are missing from the resume, subtract at least 20 points compared with otherwise similar candidates and call it out in the reason.
 Return ONLY valid JSON with numeric "score" (0-100) and short "reason".
 
 Company: ${company}
